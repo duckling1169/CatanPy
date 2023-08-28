@@ -23,10 +23,10 @@ class Tile:
         self.has_robber = self.resource == ResourceEnum.DESERT
 
         for i in range(6):
-            self.nodes.append(Node(self.center.x + self.DIMENSIONS_CORNER[i].x, self.center.y + self.DIMENSIONS_CORNER[i].y, [self.tile_id]))
+            self.nodes.append(Node(self.center.x + self.DIMENSIONS_CORNER[i].x, self.center.y + self.DIMENSIONS_CORNER[i].y, tile_ids=[self.tile_id]))
 
         for i in range(6):
-            self.edges.append(Node(self.center.x + self.DIMENSIONS_EDGES[i].x, self.center.y + self.DIMENSIONS_EDGES[i].y, [self.tile_id], self.DIRECTIONS[i]))
+            self.edges.append(Node(self.center.x + self.DIMENSIONS_EDGES[i].x, self.center.y + self.DIMENSIONS_EDGES[i].y, tile_ids=[self.tile_id], icon=self.DIRECTIONS[i]))
 
     def get_printable_tile(self):
         strings = [ "\n" ]
@@ -90,8 +90,6 @@ class TileMap():
                 def contains_atleast_2(a, b):
                     return sum(x in a for x in b) >= 2
                 
-                print(vertices)
-
                 for vertex in vertices:
                     if contains_atleast_2([6, 8], vertex) or contains_atleast_2([2, 12], vertex):
                         return False
@@ -121,13 +119,11 @@ class TileMap():
                 if not shuffled:
                     return False
             
-            print(f'Shuffled: {self.small_chips}')
             return True
         
         iters = 0
         while not chips_assigned_fairly(tile_numbers):
             iters += 1
-            print('Reshuffled.')
             random.shuffle(self.small_chips)
 
         self.small_chips.reverse()
@@ -142,7 +138,9 @@ class TileMap():
         tile_id = 0
         for i in range(len(tile_numbers)):
             for _ in range(tile_numbers[i]):
-                self.tiles.append(Tile(self.start_point.__copy__(), self.small_chips.pop(), tile_id, self.small_tile_resources.pop()))
+                self.tiles.append(
+                    Tile(self.start_point.__copy__(), self.small_chips.pop(), tile_id, self.small_tile_resources.pop(),
+                         ))
                 self.start_point.shift(0, 4)
                 tile_id += 1
 
@@ -155,7 +153,7 @@ class TileMap():
             for edge in tile.edges:
                 self.edges.append(edge)
 
-        print(f'Completed TileMap with ({iters}) iteration(s).')
+        print(f'Completed TileMap after ({iters}) iteration(s).')
 
     def __iter__(self):
         for tile in self.tiles:

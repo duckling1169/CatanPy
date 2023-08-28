@@ -1,4 +1,5 @@
 from game.enums import BuildingEnum
+from game.building import Building
 
 class Point:
 
@@ -26,9 +27,8 @@ class Node(Point):
         # port = Port()  TO_DO
         super().__init__(x, y)
 
-    # def set_building(self, Building.TYPE t, Resource[] r, int i):
-	# 	building = new Building(t, r, i, this);
-	# 	return building
+    def set_building(self, player_id:int, building_type:BuildingEnum):
+        self.building = Building(building_type, player_id)
     
     def get_resources_touching(self):
         resources = []

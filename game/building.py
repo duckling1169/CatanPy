@@ -1,12 +1,12 @@
 from game.purchaseables import Purchaseables
 from game.enums import ResourceEnum, BuildingEnum
+from game.node import *
 
 class Building(Purchaseables):
 
-    def __init__(self, player_id:int, node_id:int, type:BuildingEnum):
+    def __init__(self, type:BuildingEnum, player_id:int):
         self.type = type
         self.player_id = player_id
-        self.node_id = node_id
         self.icon = type.value
 
         match type:
