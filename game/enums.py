@@ -6,6 +6,10 @@ class BuildingEnum(Enum):
     SETTLEMENT = 'S'
     CITY = 'C'
 
+class NodeEnum(Enum):
+    VERTEX = [ BuildingEnum.EMPTY, BuildingEnum.SETTLEMENT, BuildingEnum.CITY ]
+    EDGE = [ BuildingEnum.EMPTY, BuildingEnum.ROAD ]
+
 class ResourceEnum(Enum):
     EMPTY = 'Empty'
     WHEAT = 'Wheat'

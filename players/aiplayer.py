@@ -1,6 +1,7 @@
-from game.enums import ResourceEnum
+from game.enums import ResourceEnum, BuildingEnum
 from game.building import Building
 from players.player import Player
+from game.catanboard import CatanBoard
 
 class AIPlayer(Player):
 
@@ -11,12 +12,8 @@ class AIPlayer(Player):
         # TODO: need to see if we have a port
         return True
 
-    def place_building(self, building:Building, setup_phase:int = 0):
-        if not building.cost in self.resource_hand and setup_phase != 0: # cannot afford the building
-            return False
-        
-        if setup_phase != 0: # during setup offer to place a settlement THEN a road
-            return True
+    def place_buildings(self, gb:CatanBoard, types:[BuildingEnum]):
+        return True
 
     def place_settlement(self):
         return True

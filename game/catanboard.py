@@ -36,17 +36,8 @@ class CatanBoard:
 			lower_center.shift(1, 0)
 			self.grid.update_grid(tile.dice_roll, lower_center.__copy__())
 
-			for corner in tile.corners:
-				if not corner.is_occupied():
-					self.grid.update_grid(corner.icon, Point(corner.x, corner.y))
-				else:
-					self.grid.update_grid(corner.icon, Point(corner.x, corner.y)) # y+1 ?
-
-			for edge in tile.edges:
-				if not edge.is_occupied():
-					self.grid.update_grid(edge.icon, Point(edge.x, edge.y))
-				else:
-					self.grid.update_grid(edge.icon, Point(edge.x, edge.y)) # y+1 ?
+			for node in tile.nodes:
+				self.grid.update_grid(node.icon, Point(node.x, node.y))
 
 	def __str__(self):
 		return self.grid.__str__()

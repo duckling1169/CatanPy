@@ -12,13 +12,12 @@ class Tile:
     
     DIRECTIONS = [ '-', '|', '-', '-', '|', '-']
 
-    def __init__(self, center:Point, roll:int, id:int, resource:ResourceEnum, corners:[Node], edges:[Node]):
+    def __init__(self, center:Point, roll:int, id:int, resource:ResourceEnum, nodes:[Node]):
         self.center = center
         self.dice_roll = roll
         self.id = id
         self.resource = resource
-        self.corners = corners
-        self.edges = edges
+        self.nodes = nodes
 
         self.has_robber = self.resource == ResourceEnum.DESERT
 
@@ -63,35 +62,37 @@ class TileMap():
     
     def __init__(self):
         self.tiles = []
-        self.corners = []
-        self.edges = []
-
+        self.nodes = []
         row_lengths = [ 3, 4, 5, 4, 3 ]
-        start_point = Point(5, 8)
-        start = start_point.__copy__()
-        tile_centers = []
 
-        for i in range(len(row_lengths)):
-            for _ in range(row_lengths[i]):
-                tile_centers.append(start_point.__copy__())
-                start_point.shift(0, 4)
+        # Get all locations for the nodes
+        def get_node_locations(self, row_lengths):
+            start_point = Point(5, 8)
+            tile_centers = []
+            start = start_point.__copy__()
 
-            start.shift(4, -2) if i < 2 else start.shift(4, 2)
-            start_point = start.__copy__()
+            for i in range(len(row_lengths)):
+                for _ in range(row_lengths[i]):
+                    tile_centers.append(start_point.__copy__())
+                    start_point.shift(0, 4)
 
-        corner_points = []
-        edge_points = []
-        for center in tile_centers:
-            for i in range(6): # up to 6 unique Nodes for each: edges and corners
-                corner_points.append(Point(center.x + Tile.DIMENSIONS_CORNER[i].x, center.y + Tile.DIMENSIONS_CORNER[i].y))
-                edge_points.append(Point(center.x + Tile.DIMENSIONS_EDGES[i].x, center.y + Tile.DIMENSIONS_EDGES[i].y))
+                start.shift(4, -2) if i < 2 else start.shift(4, 2)
+                start_point = start.__copy__()
 
-        for corner in set(corner_points):
-            self.corners.append(Node(corner.x, corner.y))
-   
-        for edge in set(edge_points):
-            self.edges.append(Node(edge.x, edge.y))
+            all_nodes = []
+            for center in tile_centers:
+                for i in range(6): # up to 6 unique Nodes for each: edges and vertices
+                    all_nodes.append(Node(center.x + Tile.DIMENSIONS_CORNER[i].x, center.y + Tile.DIMENSIONS_CORNER[i].y, NodeEnum.VERTEX))
+                    all_nodes.append(Node(center.x + Tile.DIMENSIONS_EDGES[i].x, center.y + Tile.DIMENSIONS_EDGES[i].y, NodeEnum.EDGE))
 
+            for node in set(all_nodes):
+                self.nodes.append(Node(node.x, node.y, node.type))
+
+            return tile_centers
+        
+        tile_centers = get_node_locations(self, row_lengths)
+
+        # Distributes chips according to Catan rules
         def chips_assigned_fairly(tile_numbers):
             # two triangles of numbers (above and below mid row)
             # 4 vertices of #s to check
@@ -151,41 +152,43 @@ class TileMap():
         self.small_tile_resources.remove(ResourceEnum.DESERT)
         self.small_tile_resources.insert(self.small_chips.index(0), ResourceEnum.DESERT)
 
-        start = start_point.__copy__()
+        # Creates the Tiles with shared nodes
+        def create_tiles(self, tile_centers):
+            tile_id = 0
+            tiles = []
+            for center in tile_centers:
+                tile_nodes = []
+                for node in self.nodes:
+                    for i in range(6):
+                        if node.type == NodeEnum.VERTEX and node.x == center.x + Tile.DIMENSIONS_CORNER[i].x and node.y == center.y + Tile.DIMENSIONS_CORNER[i].y:
+                            tile_nodes.append(node)
+                        elif node.type == NodeEnum.EDGE and node.x == center.x + Tile.DIMENSIONS_EDGES[i].x and node.y == center.y + Tile.DIMENSIONS_EDGES[i].y:
+                            node.icon = Tile.DIRECTIONS[i]
+                            tile_nodes.append(node)
 
-        tile_id = 0
-        for center in tile_centers:
-            tile_corners = []
-            for corner in self.corners:
-                for i in range(6):
-                    if corner.x == center.x + Tile.DIMENSIONS_CORNER[i].x and corner.y == center.y + Tile.DIMENSIONS_CORNER[i].y:
-                        tile_corners.append(corner)
+                tiles.append(Tile(center.__copy__(), self.small_chips.pop(), tile_id, self.small_tile_resources.pop(), nodes=tile_nodes))
+                tile_id += 1
+            return tiles
+    
+        self.tiles = create_tiles(self, tile_centers)
 
-            tile_edges = []
-            for edge in self.edges:
-                for i in range(6):
-                    if edge.x == center.x + Tile.DIMENSIONS_EDGES[i].x and edge.y == center.y + Tile.DIMENSIONS_EDGES[i].y:
-                        tile_edges.append(edge)
-                        edge.icon = Tile.DIRECTIONS[i]
-            
-            self.tiles.append(Tile(center.__copy__(), self.small_chips.pop(), tile_id, self.small_tile_resources.pop(), tile_corners, tile_edges))
-            tile_id += 1
+        # Adds tiles_touching and neighbors to nodes
+        def add_neighbors(self):
+            for tile in self.tiles:
+                for node in tile.nodes:
+                    for other_tile in self.tiles:
+                        for other_node in other_tile.nodes:
+                            if node == other_node:
+                                node.tiles_touching.append(other_tile.id)
+                    node.tiles_touching = list(set(node.tiles_touching))
 
-        for tile in self.tiles:
-            for corner in tile.corners:
-                for other_tile in self.tiles:
-                    for other_corner in other_tile.corners:
-                        if corner == other_corner:
-                            corner.tiles_touching.append(other_tile.id)
-                corner.tiles_touching = list(set(corner.tiles_touching))
+            for node in self.nodes:
+                node.neighbors = self.calculate_neighbors(node).copy()
 
-        for corner in self.corners:
-            corner.neighbors = self.calculate_neighbors(corner).copy()
-
-        for edge in self.edges:
-            edge.neighbors = self.calculate_neighbors(edge).copy()
+        add_neighbors(self)
 
         print(f'Completed TileMap after ({iters}) iteration(s).')
+
 
     def calculate_neighbors(self, node:Node):
         neighbors = []
@@ -203,45 +206,44 @@ class TileMap():
             distances.sort()
             return distances, dists
 
-        distances, dists = calculate_distances(self.corners)
+        distances, dists = calculate_distances(self.nodes)
 
-        for distances in distances[:1]:
-            for node, other in dists[distances]:
-                neighbors.append(other)
-
-        distances, dists = calculate_distances(self.edges)
-
-        for distances in distances[:1]:
+        for distances in distances[:2]:
             for node, other in dists[distances]:
                 neighbors.append(other)
 
         return neighbors
 
-    def get_corner_from_point(self, point:Point):
-        for corner in self.corners:
-            if corner.x == point.x and corner.y == point.y:
-                return corner
+    def get_node_from_point(self, point:Point):
+        if point == None:
+            return None
+        
+        for node in self.nodes:
+            if node.x == point.x and node.y == point.y:
+                return node
         return None
-    
-    def get_edge_from_point(self, point:Point):
-        for edge in self.edges:
-            if edge.x == point.x and edge.y == point.y:
-                return edge
+
+    def get_node_from_id(self, id:int):
+        if point == None:
+            return None
+
+        for node in self.nodes:
+            if node.id == id:
+                return node
         return None
 
     def __iter__(self):
         for tile in self.tiles:
             yield tile
 
-    
 
 	# public boolean checkOtherSettlements(KeyPoint kp) {
 	# 	CustomPoint cp = null;
 	# 	for (Point p : Tile.CORNER_CHECKS) {
 	# 		cp = new CustomPoint(kp.getPoint().x + p.x, kp.getPoint().y + p.y);
 	# 		if (inBounds(cp)) {
-	# 			for (KeyPoint corner : this.corners) {
-	# 				if (isSameLocation(cp, corner.getPoint()) && corner.isOccupied()) {
+	# 			for (KeyPoint vertex : this.vertices) {
+	# 				if (isSameLocation(cp, vertex.getPoint()) && vertex.isOccupied()) {
 	# 					return false;
 	# 				}
 	# 			}

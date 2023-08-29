@@ -24,33 +24,30 @@ class Runner():
                     self.players.append(AIPlayer(resp, id)) if resp == 'ai' else self.players.append(Player(resp, id))
                 id += 1
 
-        self.gb.update_grid()
-        print(self.gb)
-        # self.gb.tilemap.corners[0].set_building(BuildingEnum.SETTLEMENT, 1)
+        # self.gb.tilemap.nodes[1].set_building(BuildingEnum.SETTLEMENT, 1)
+        # print(self.gb.tilemap.nodes[1].is_occupied())
         # self.gb.update_grid()
         # print(self.gb)
 
-        # print(self.gb.tilemap.corners[0])
-        # for neighbor in self.gb.tilemap.corners[0].neighbors:
+        # print(self.gb.tilemap.nodes[0])
+        # for neighbor in self.gb.tilemap.nodes[0].neighbors:
         #     print(neighbor)
-
-        # print(self.gb.tilemap.edges[0])
-        # for neighbor in self.gb.tilemap.edges[0].neighbors:
-        #     print(neighbor)
-
 
         for player in self.players:
-            player.place_buildings(self.gb, [BuildingEnum.SETTLEMENT, BuildingEnum.ROAD], True)
+            self.gb.update_grid()
+            print(self.gb)
+            player.place_buildings(self.gb, [BuildingEnum.SETTLEMENT, BuildingEnum.ROAD])
 
         self.players.reverse()
 
         for player in self.players:
-            player.place_buildings(self.gb, [BuildingEnum.SETTLEMENT, BuildingEnum.ROAD], True)
+            self.gb.update_grid()
+            print(self.gb)
+            player.place_buildings(self.gb, [BuildingEnum.SETTLEMENT, BuildingEnum.ROAD])
 
     def run(self):
         
         self.gb.update_grid()
-
         print(self.gb)
 
 Runner(True).run()
