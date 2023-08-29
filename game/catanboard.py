@@ -10,7 +10,7 @@ class CatanBoard:
 	sides = [] # Side()?
 	players = [] # Player()!
 	
-	def __init__(self, length, width, scale=1, empty_icon='.'):
+	def __init__(self, length, width, scale=1, empty_icon=' '):
 		self.tilemap = TileMap()
 		self.grid = DisplayGrid(length, width, scale, empty_icon)
 

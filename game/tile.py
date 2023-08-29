@@ -12,10 +12,10 @@ class Tile:
     
     DIRECTIONS = [ '-', '|', '-', '-', '|', '-']
 
-    def __init__(self, center:Point, roll:int, tile_id:int, resource:ResourceEnum, corners:[Node], edges:[Node]):
+    def __init__(self, center:Point, roll:int, id:int, resource:ResourceEnum, corners:[Node], edges:[Node]):
         self.center = center
         self.dice_roll = roll
-        self.tile_id = tile_id
+        self.id = id
         self.resource = resource
         self.corners = corners
         self.edges = edges
@@ -89,8 +89,8 @@ class TileMap():
         for corner in set(corner_points):
             self.corners.append(Node(corner.x, corner.y))
    
-        for corner in set(edge_points):
-            self.edges.append(Node(corner.x, corner.y))
+        for edge in set(edge_points):
+            self.edges.append(Node(edge.x, edge.y))
 
         def chips_assigned_fairly(tile_numbers):
             # two triangles of numbers (above and below mid row)
@@ -171,8 +171,81 @@ class TileMap():
             self.tiles.append(Tile(center.__copy__(), self.small_chips.pop(), tile_id, self.small_tile_resources.pop(), tile_corners, tile_edges))
             tile_id += 1
 
+        for tile in self.tiles:
+            for corner in tile.corners:
+                for other_tile in self.tiles:
+                    for other_corner in other_tile.corners:
+                        if corner == other_corner:
+                            corner.tiles_touching.append(other_tile.id)
+                corner.tiles_touching = list(set(corner.tiles_touching))
+
+        for corner in self.corners:
+            corner.neighbors = self.calculate_neighbors(corner).copy()
+
+        for edge in self.edges:
+            edge.neighbors = self.calculate_neighbors(edge).copy()
+
         print(f'Completed TileMap after ({iters}) iteration(s).')
+
+    def calculate_neighbors(self, node:Node):
+        neighbors = []
+
+        def calculate_distances(array:[Node]):
+            dists = {}
+            for other in array:
+                dist = math.floor(Point.dist(node.x, node.y, other.x, other.y))
+                if dist in dists:
+                    dists[dist].append((node, other))
+                elif dist != 0:
+                    dists[dist] = [(node, other)]
+
+            distances = list(set(dists.keys()))
+            distances.sort()
+            return distances, dists
+
+        distances, dists = calculate_distances(self.corners)
+
+        for distances in distances[:1]:
+            for node, other in dists[distances]:
+                neighbors.append(other)
+
+        distances, dists = calculate_distances(self.edges)
+
+        for distances in distances[:1]:
+            for node, other in dists[distances]:
+                neighbors.append(other)
+
+        return neighbors
+
+    def get_corner_from_point(self, point:Point):
+        for corner in self.corners:
+            if corner.x == point.x and corner.y == point.y:
+                return corner
+        return None
+    
+    def get_edge_from_point(self, point:Point):
+        for edge in self.edges:
+            if edge.x == point.x and edge.y == point.y:
+                return edge
+        return None
 
     def __iter__(self):
         for tile in self.tiles:
             yield tile
+
+    
+
+	# public boolean checkOtherSettlements(KeyPoint kp) {
+	# 	CustomPoint cp = null;
+	# 	for (Point p : Tile.CORNER_CHECKS) {
+	# 		cp = new CustomPoint(kp.getPoint().x + p.x, kp.getPoint().y + p.y);
+	# 		if (inBounds(cp)) {
+	# 			for (KeyPoint corner : this.corners) {
+	# 				if (isSameLocation(cp, corner.getPoint()) && corner.isOccupied()) {
+	# 					return false;
+	# 				}
+	# 			}
+	# 		}
+	# 	}
+	# 	return true;
+	# }

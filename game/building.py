@@ -7,7 +7,7 @@ class Building(Purchaseables):
     def __init__(self, type:BuildingEnum, player_id:int):
         self.type = type
         self.player_id = player_id
-        self.icon = type.value
+        self.icon = type.value + str(self.player_id)
 
         match type:
             case BuildingEnum.ROAD:

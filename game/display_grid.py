@@ -2,13 +2,27 @@ from game.node import Point
 
 class DisplayGrid():
 
-    def __init__(self, length, width, scale = 1, empty_icon = '.'):
+    def __init__(self, length, width, scale = 1, empty_icon = ' '):
         self.grid = []
         self.scale = scale
         self.empty_icon = empty_icon
         for _ in range(length):
             self.grid.append([self.empty_icon] * width)
 
+    def get_x_scale(self):
+        x_scale = []
+        for i in range(65, 65 + len(self.grid[0])):
+            x_scale.append(chr(i+6) if i > 65 + 25 else chr(i))
+        return x_scale
+    
+    @staticmethod
+    def convert_to_x_scale(i):
+        return chr(i+6 + 65) if i  > 25 else chr(i + 65)
+    
+    @staticmethod
+    def x_scale_convert(c):
+        return ord(c)-6-65 if ord(c) > 65 + 25 else ord(c)-65
+        
     def update_grid(self, icon:str, p:Point):
         self.grid[p.x][p.y] = icon
 
@@ -46,8 +60,8 @@ class DisplayGrid():
             s += '-+-'*self.scale
 
         s += '\n     '
-        for i in range(65, 65 + len(self.grid[0])):
-            c = chr(i+6) if i > 65 + 25 else chr(i)
+        x_scale = self.get_x_scale()
+        for c in x_scale:
             s += c + '  '*self.scale
             
         return s

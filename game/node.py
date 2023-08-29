@@ -1,5 +1,6 @@
 from game.enums import BuildingEnum
 from game.building import Building
+import math
 
 class Point:
 
@@ -11,6 +12,10 @@ class Point:
         self.x += x
         self.y += y
 
+    @staticmethod
+    def dist(p1_x, p1_y, p2_x, p2_y):
+        return round(math.dist([p1_x, p1_y], [p2_x, p2_y]), 2)
+
     def __copy__(self):
         return Point(self.x, self.y)
     
@@ -21,32 +26,32 @@ class Point:
         return hash((self.x, self.y))
 
     def __str__(self):
-        return f'Point({str(self.x)}, {str(self.y)})'
+        from game.display_grid import DisplayGrid
+        return f'Point({str(self.x)}, {DisplayGrid.convert_to_x_scale(self.y)})'
 
 class Node(Point):
 
-    def __init__(self, x, y, tile_ids:[int] = [], icon:str = '0'):
+    def __init__(self, x, y, neighbors:[] = [], tile_ids:[int] = [], icon:str = '0'):
+        self.neighbors = neighbors
         self.icon = icon
-        self.building = BuildingEnum.EMPTY
-        self.is_port = False
         self.tiles_touching = tile_ids.copy()
-        # port = Port()  TO_DO
+        self.building_type = BuildingEnum.EMPTY
+        self.port = None # TODO
         super().__init__(x, y)
 
-    def set_building(self, player_id:int, building_type:BuildingEnum):
-        self.building = Building(building_type, player_id)
-    
-    def get_resources_touching(self):
-        resources = []
-        for tile in self.tiles_touching:
-            resources.append(tile.resource)
-        return resources
+    def set_building(self, building_type:BuildingEnum, player_id:int):
+        if self.building_type != BuildingEnum.EMPTY:
+            return False
+        
+        self.building_type = Building(building_type, player_id)
+        self.icon = self.building_type.icon
+        return True
     
     def is_occupied(self):
-        return self.building != BuildingEnum.EMPTY
+        return self.building_type != BuildingEnum.EMPTY
     
     def get_player_id(self):
-        return self.building.player_id if self.building is not BuildingEnum.EMPTY else -1
+        return self.building_type.player_id if self.building_type is not BuildingEnum.EMPTY else -1
     
     def __str__(self):
         return super().__str__() + f' | {self.is_occupied()}'
