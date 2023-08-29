@@ -41,9 +41,9 @@ class DisplayGrid():
             
             s += '\n'*self.scale
 
-        s += '   '
+        s += '   +'
         for i in range(len(self.grid[0])):
-            s += '---'*self.scale
+            s += '-+-'*self.scale
 
         s += '\n     '
         for i in range(65, 65 + len(self.grid[0])):

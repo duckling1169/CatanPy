@@ -13,6 +13,12 @@ class Point:
 
     def __copy__(self):
         return Point(self.x, self.y)
+    
+    def __eq__(self, obj):
+        return isinstance(obj, Point) and obj.x == self.x and obj.y == self.y
+    
+    def __hash__(self):
+        return hash((self.x, self.y))
 
     def __str__(self):
         return f'Point({str(self.x)}, {str(self.y)})'
@@ -41,3 +47,6 @@ class Node(Point):
     
     def get_player_id(self):
         return self.building.player_id if self.building is not BuildingEnum.EMPTY else -1
+    
+    def __str__(self):
+        return super().__str__() + f' | {self.is_occupied()}'

@@ -8,7 +8,6 @@ import random
 class CatanBoard:
 	
 	sides = [] # Side()?
-	deck = [] # DevelopmentCard()!
 	players = [] # Player()!
 	
 	def __init__(self, length, width, scale=1, empty_icon='.'):
@@ -37,17 +36,17 @@ class CatanBoard:
 			lower_center.shift(1, 0)
 			self.grid.update_grid(tile.dice_roll, lower_center.__copy__())
 
-			for node in tile.nodes:
-				if node.is_occupied(): # y+1 ?
-					self.grid.update_grid(node.icon, Point(node.x, node.y))
+			for corner in tile.corners:
+				if not corner.is_occupied():
+					self.grid.update_grid(corner.icon, Point(corner.x, corner.y))
 				else:
-					self.grid.update_grid(node.icon, Point(node.x, node.y)) 
+					self.grid.update_grid(corner.icon, Point(corner.x, corner.y)) # y+1 ?
 
-			for node in tile.edges:
-				if node.is_occupied(): # y+1 ?
-					self.grid.update_grid(node.icon, Point(node.x, node.y))
+			for edge in tile.edges:
+				if not edge.is_occupied():
+					self.grid.update_grid(edge.icon, Point(edge.x, edge.y))
 				else:
-					self.grid.update_grid(node.icon, Point(node.x, node.y))
+					self.grid.update_grid(edge.icon, Point(edge.x, edge.y)) # y+1 ?
 
 	def __str__(self):
 		return self.grid.__str__()

@@ -5,6 +5,7 @@ from game.display_grid import *
 from game.catanboard import CatanBoard
 
 def run():
+
     gb = CatanBoard(27, 25, 1, ' ')
 
     gb.update_grid()

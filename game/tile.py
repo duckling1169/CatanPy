@@ -11,22 +11,16 @@ class Tile:
         Point(2, 1), Point(0, 2), Point(-2, 1) ]
     
     DIRECTIONS = [ '-', '|', '-', '-', '|', '-']
-    
-    def __init__(self, cent:Point, roll:int, id:int, re:ResourceEnum):
-        self.center = cent
+
+    def __init__(self, center:Point, roll:int, tile_id:int, resource:ResourceEnum, corners:[Node], edges:[Node]):
+        self.center = center
         self.dice_roll = roll
-        self.tile_id = id
-        self.resource = re
-        self.nodes = []
-        self.edges = []
+        self.tile_id = tile_id
+        self.resource = resource
+        self.corners = corners
+        self.edges = edges
 
         self.has_robber = self.resource == ResourceEnum.DESERT
-
-        for i in range(6):
-            self.nodes.append(Node(self.center.x + self.DIMENSIONS_CORNER[i].x, self.center.y + self.DIMENSIONS_CORNER[i].y, tile_ids=[self.tile_id]))
-
-        for i in range(6):
-            self.edges.append(Node(self.center.x + self.DIMENSIONS_EDGES[i].x, self.center.y + self.DIMENSIONS_EDGES[i].y, tile_ids=[self.tile_id], icon=self.DIRECTIONS[i]))
 
     def get_printable_tile(self):
         strings = [ "\n" ]
@@ -56,6 +50,7 @@ class Tile:
         
         return (float) (self.dice_roll - 1) / 36.0 if self.dice_roll < 7 else (float) (13 - self.dice_roll) / 36.0
     
+    
 class TileMap():
 
     small_chips = [ 0, 2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12 ]
@@ -66,13 +61,36 @@ class TileMap():
                 ResourceEnum.ORE, ResourceEnum.ORE, ResourceEnum.ORE, 
                 ResourceEnum.BRICK, ResourceEnum.BRICK, ResourceEnum.BRICK, ResourceEnum.DESERT ]
     
-    start_point = Point(5, 8)
-
     def __init__(self):
-        self.nodes = []
-        self.edges = []
         self.tiles = []
-        tile_numbers = [ 3, 4, 5, 4, 3 ]
+        self.corners = []
+        self.edges = []
+
+        row_lengths = [ 3, 4, 5, 4, 3 ]
+        start_point = Point(5, 8)
+        start = start_point.__copy__()
+        tile_centers = []
+
+        for i in range(len(row_lengths)):
+            for _ in range(row_lengths[i]):
+                tile_centers.append(start_point.__copy__())
+                start_point.shift(0, 4)
+
+            start.shift(4, -2) if i < 2 else start.shift(4, 2)
+            start_point = start.__copy__()
+
+        corner_points = []
+        edge_points = []
+        for center in tile_centers:
+            for i in range(6): # up to 6 unique Nodes for each: edges and corners
+                corner_points.append(Point(center.x + Tile.DIMENSIONS_CORNER[i].x, center.y + Tile.DIMENSIONS_CORNER[i].y))
+                edge_points.append(Point(center.x + Tile.DIMENSIONS_EDGES[i].x, center.y + Tile.DIMENSIONS_EDGES[i].y))
+
+        for corner in set(corner_points):
+            self.corners.append(Node(corner.x, corner.y))
+   
+        for corner in set(edge_points):
+            self.edges.append(Node(corner.x, corner.y))
 
         def chips_assigned_fairly(tile_numbers):
             # two triangles of numbers (above and below mid row)
@@ -122,7 +140,7 @@ class TileMap():
             return True
         
         iters = 0
-        while not chips_assigned_fairly(tile_numbers):
+        while not chips_assigned_fairly(row_lengths):
             iters += 1
             random.shuffle(self.small_chips)
 
@@ -133,25 +151,25 @@ class TileMap():
         self.small_tile_resources.remove(ResourceEnum.DESERT)
         self.small_tile_resources.insert(self.small_chips.index(0), ResourceEnum.DESERT)
 
-        start = self.start_point.__copy__()
+        start = start_point.__copy__()
 
         tile_id = 0
-        for i in range(len(tile_numbers)):
-            for _ in range(tile_numbers[i]):
-                self.tiles.append(
-                    Tile(self.start_point.__copy__(), self.small_chips.pop(), tile_id, self.small_tile_resources.pop(),
-                         ))
-                self.start_point.shift(0, 4)
-                tile_id += 1
+        for center in tile_centers:
+            tile_corners = []
+            for corner in self.corners:
+                for i in range(6):
+                    if corner.x == center.x + Tile.DIMENSIONS_CORNER[i].x and corner.y == center.y + Tile.DIMENSIONS_CORNER[i].y:
+                        tile_corners.append(corner)
 
-            start.shift(4, -2) if i < 2 else start.shift(4, 2)
-            self.start_point = start.__copy__()
-        
-        for tile in self.tiles:
-            for node in tile.nodes:
-                self.nodes.append(node)
-            for edge in tile.edges:
-                self.edges.append(edge)
+            tile_edges = []
+            for edge in self.edges:
+                for i in range(6):
+                    if edge.x == center.x + Tile.DIMENSIONS_EDGES[i].x and edge.y == center.y + Tile.DIMENSIONS_EDGES[i].y:
+                        tile_edges.append(edge)
+                        edge.icon = Tile.DIRECTIONS[i]
+            
+            self.tiles.append(Tile(center.__copy__(), self.small_chips.pop(), tile_id, self.small_tile_resources.pop(), tile_corners, tile_edges))
+            tile_id += 1
 
         print(f'Completed TileMap after ({iters}) iteration(s).')
 
