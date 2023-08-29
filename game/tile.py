@@ -14,10 +14,16 @@ class Tile:
 
     def __init__(self, center:Point, roll:int, id:int, resource:ResourceEnum, nodes:[Node]):
         self.center = center
-        self.dice_roll = roll
+        self.dice_roll = roll        
         self.id = id
         self.resource = resource
         self.nodes = nodes
+
+        self.resource_points = 0
+        for i in range(6):
+            for j in range(6):
+                if i+j+2 == self.dice_roll:
+                    self.resource_points += 1
 
         self.has_robber = self.resource == ResourceEnum.DESERT
 
@@ -45,10 +51,12 @@ class Tile:
     
     def get_roll_probability(self):
         if self.resource == ResourceEnum.DESERT | self.resource == ResourceEnum.EMPTY:
-            return -1
+            return 0
         
         return (float) (self.dice_roll - 1) / 36.0 if self.dice_roll < 7 else (float) (13 - self.dice_roll) / 36.0
     
+    def __str__(self):
+        return f'Tile {self.id}\nResource: {self.resource.value}\nRoll: {self.dice_roll}'
     
 class TileMap():
 
@@ -70,20 +78,18 @@ class TileMap():
             start_point = Point(5, 8)
             tile_centers = []
             start = start_point.__copy__()
+            all_nodes = []
 
             for i in range(len(row_lengths)):
                 for _ in range(row_lengths[i]):
+                    for i in range(6): # up to 6 unique Nodes for each: edges and vertices
+                        all_nodes.append(Node(start_point.x + Tile.DIMENSIONS_CORNER[i].x, start_point.y + Tile.DIMENSIONS_CORNER[i].y, NodeEnum.VERTEX))
+                        all_nodes.append(Node(start_point.x + Tile.DIMENSIONS_EDGES[i].x, start_point.y + Tile.DIMENSIONS_EDGES[i].y, NodeEnum.EDGE))
                     tile_centers.append(start_point.__copy__())
                     start_point.shift(0, 4)
 
                 start.shift(4, -2) if i < 2 else start.shift(4, 2)
                 start_point = start.__copy__()
-
-            all_nodes = []
-            for center in tile_centers:
-                for i in range(6): # up to 6 unique Nodes for each: edges and vertices
-                    all_nodes.append(Node(center.x + Tile.DIMENSIONS_CORNER[i].x, center.y + Tile.DIMENSIONS_CORNER[i].y, NodeEnum.VERTEX))
-                    all_nodes.append(Node(center.x + Tile.DIMENSIONS_EDGES[i].x, center.y + Tile.DIMENSIONS_EDGES[i].y, NodeEnum.EDGE))
 
             for node in set(all_nodes):
                 self.nodes.append(Node(node.x, node.y, node.type))
@@ -100,11 +106,7 @@ class TileMap():
             start_bottom = 12
 
             def find_illegal_chips(top_left, top_right, mid_left, mid, btm_left, btm_right):
-                vertex_1 = [top_left, top_right, mid]
-                vertex_2 = [top_left, mid_left, mid]
-                vertex_3 = [mid_left, mid, btm_left]
-                vertex_4 = [mid, btm_left, btm_right]
-                vertices = [vertex_1, vertex_2, vertex_3, vertex_4]
+                vertices = [[top_left, top_right, mid], [top_left, mid_left, mid], [mid_left, mid, btm_left], [mid, btm_left, btm_right]]
 
                 def contains_atleast_2(a, b):
                     return sum(x in a for x in b) >= 2
@@ -223,13 +225,10 @@ class TileMap():
                 return node
         return None
 
-    def get_node_from_id(self, id:int):
-        if point == None:
-            return None
-
-        for node in self.nodes:
-            if node.id == id:
-                return node
+    def get_tile_from_id(self, id:int):
+        for tile in self.tiles:
+            if tile.id == id:
+                return tile
         return None
 
     def __iter__(self):

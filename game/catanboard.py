@@ -35,6 +35,9 @@ class CatanBoard:
 			lower_center = tile.center.__copy__()
 			lower_center.shift(1, 0)
 			self.grid.update_grid(tile.dice_roll, lower_center.__copy__())
+			upper_center = tile.center.__copy__()
+			upper_center.shift(-1, 0)
+			self.grid.update_grid(f'({str(tile.resource_points)})', upper_center.__copy__())
 
 			for node in tile.nodes:
 				self.grid.update_grid(node.icon, Point(node.x, node.y))
