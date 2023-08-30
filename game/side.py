@@ -6,10 +6,14 @@ from game.node import Node
 
 class Side():
 
+    CONNECTION_ICON = '·'
+
     def __init__(self, tiles:[Tile], resources:[ResourceEnum], direction:SideDirectionEnum):
         self.resources = resources
         self.direction = direction
         self.ports = []
+
+        self.connections = []
 
         def make_port(resource:ResourceEnum, center:Point, type:PortEnum, direction:PortDirectionEnum, adjacent_tiles:[Tile]):
             port = Port(resource, center, type, direction)
@@ -28,13 +32,23 @@ class Side():
                         (node.x == one.x and node.y == one.y) or \
                         (node.x == two.x and node.y == two.y):
                         node.port = port
+
+            # Assign icons for pretty port printing
+            match port.type:
+                case PortEnum.SQUARE:
+                    self.connections.append((Point(port.center.x + port.direction.value.x, port.center.y), Side.CONNECTION_ICON))
+                    self.connections.append((Point(port.center.x, port.center.y + port.direction.value.y), Side.CONNECTION_ICON))
+                case PortEnum.TRIANGLE:
+                    self.connections.append((Point(port.center.x + port.direction.value.x, port.center.y), Side.CONNECTION_ICON))
+                    self.connections.append((Point(port.center.x + port.direction.value.x, port.center.y + port.direction.value.y), Side.CONNECTION_ICON))
+
     
             return port
 
+        adjacent_tiles = [tiles[direction] for direction in self.direction.value]
         self.type = SideEnum.SINGLE_RESOURCE if len(resources) == 1 else SideEnum.DOUBLE_RESOURCE
 
         if self.type == SideEnum.DOUBLE_RESOURCE:
-            adjacent_tiles = [tiles[id] for id in self.direction.value ]
             center = adjacent_tiles[2].center.__copy__()
 
             match self.direction:
@@ -56,9 +70,8 @@ class Side():
                 case SideDirectionEnum.BOTTOM_RIGHT:
                     type = PortEnum.TRIANGLE
                     direction = PortDirectionEnum.BOTTOM_RIGHT
-
-            self.ports.append(make_port(self.resources[1], center, type, direction))
-
+            
+            self.ports.append(make_port(self.resources[1], center, type, direction, adjacent_tiles))
             center = adjacent_tiles[1].center.__copy__()
 
             match self.direction:
@@ -81,10 +94,9 @@ class Side():
                     type = PortEnum.SQUARE
                     direction = PortDirectionEnum.BOTTOM_RIGHT
 
-            self.ports.append(make_port(self.resources[1], center, type, direction))
-   
+            self.ports.append(make_port(self.resources[0], center, type, direction, adjacent_tiles))
+
         elif self.type == SideEnum.SINGLE_RESOURCE:
-            adjacent_tiles = [tile for tile in tiles if tile.id in self.direction.value]
             center = adjacent_tiles[1].center.__copy__()
 
             match self.direction:
@@ -107,8 +119,8 @@ class Side():
                     type = PortEnum.TRIANGLE
                     direction = PortDirectionEnum.BOTTOM_RIGHT
             
-            self.ports.append(make_port(self.resources[1], center, type, direction))
-
+            self.ports.append(make_port(self.resources[0], center, type, direction, adjacent_tiles))
+   
     def __str__(self):
         s = f'Side: {self.direction} | {self.type}\n'
         for port in self.ports:

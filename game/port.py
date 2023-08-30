@@ -21,3 +21,6 @@ class Port():
 
     def __str__(self):
         return f'{self.resource.value} port at {self.center}\n{self.type} | {self.direction}'
+    
+    def __copy__(self):
+        return Port(self.resource, self.center.__copy__(), self.type, self.direction)

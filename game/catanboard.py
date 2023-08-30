@@ -1,6 +1,6 @@
 from game.tilemap import TileMap
 from game.display_grid import DisplayGrid
-from game.enums import DevelopmentCardEnum
+from game.enums import DevelopmentCardEnum, PortDirectionEnum, PortEnum
 from game.point import Point
 from game.developmentcard import DevelopmentCard
 import random
@@ -52,8 +52,11 @@ class CatanBoard:
 
 		for side in self.tilemap.sides:
 			for port in side.ports:
-				print(port)
-				self.grid.update_grid(port.icon, Point(port.center.x, port.center.y))
+				self.grid.update_grid(port.icon, port.center)
+			for point, icon in side.connections:
+				self.grid.update_grid(icon, point)
+
+		# End updating board
 
 	def __str__(self):
 		return self.grid.__str__()

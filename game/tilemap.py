@@ -124,33 +124,22 @@ class TileMap():
         for node in self.nodes:
             node.neighbors = self.calculate_neighbors(node)
 
-
-        side1 = Side(self.tiles, 
-                     [ResourceEnum.THREE_FOR_ONE], 
-                     SideDirectionEnum.BOTTOM)
-        side2 = Side(self.tiles, 
-                     [ResourceEnum.BRICK, ResourceEnum.THREE_FOR_ONE], 
-                     SideDirectionEnum.BOTTOM_LEFT)
-        side3 = Side(self.tiles, 
-                     [ResourceEnum.WOOD], 
-                     SideDirectionEnum.TOP_LEFT)
-        side4 = Side(self.tiles, 
-                     [ResourceEnum.WHEAT, ResourceEnum.THREE_FOR_ONE], 
-                     SideDirectionEnum.TOP)
-        side5 = Side(self.tiles, 
-                     [ResourceEnum.ORE], 
-                     SideDirectionEnum.TOP_RIGHT)
-        side6 = Side(self.tiles, 
-                     [ResourceEnum.SHEEP, ResourceEnum.THREE_FOR_ONE], 
-                     SideDirectionEnum.BOTTOM_RIGHT)
-        
-        self.sides = [ side1, 
-                      side2, 
-                      side3, 
-                      side4, 
-                      side5, 
-                      side6 
+        # Create all 6 sides
+        port_resource_collections = [
+            [ResourceEnum.THREE_FOR_ONE],
+            [ResourceEnum.BRICK, ResourceEnum.THREE_FOR_ONE],
+            [ResourceEnum.WOOD],
+            [ResourceEnum.WHEAT, ResourceEnum.THREE_FOR_ONE],
+            [ResourceEnum.ORE],
+            [ResourceEnum.SHEEP, ResourceEnum.THREE_FOR_ONE]
         ]
+
+        random.shuffle(port_resource_collections)
+
+        self.sides = []
+        for direction in SideDirectionEnum:
+            r = port_resource_collections.pop()
+            self.sides.append(Side(self.tiles, r, direction))
         
         print(f'Completed TileMap after ({iters}) iteration(s).')
 
