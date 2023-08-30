@@ -59,4 +59,11 @@ class Runner():
         for player in self.players:
             player.play(self.gb)
 
+        # Before-roll options: Play Development card or roll 
+
+        # Roll + give out resources OR if 7; move Robber + steal from a player on that tile
+
+        # After-roll options: Buy a purchaseable item or trade with bank or players
+
+
 Runner(True).run()

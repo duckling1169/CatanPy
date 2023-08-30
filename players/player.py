@@ -1,7 +1,8 @@
 from game.enums import ResourceEnum, BuildingEnum, NodeEnum
 from game.display_grid import DisplayGrid
-from game.node import Point
+from game.node import *
 from game.catanboard import CatanBoard
+from collections import Counter
 
 class Player():
 
@@ -71,22 +72,11 @@ class Player():
             
             city_vertex = gb.tilemap.get_node_from_point(city_point)
             
-            # check if spot is existing settlement under this player's id
-            if city_vertex == None:
-                print('Couldn\'t find that spot!')
-                continue
+            if self.check_city_vertex(city_vertex):
+                city_upgraded = city_vertex.set_building(BuildingEnum.CITY, self.player_id)
 
-            if city_vertex.building.type != BuildingEnum.SETTLEMENT:
-                print('Choose a settlement to upgrade.')
-                continue
-
-            if city_vertex.player_id != self.player_id:
-                print('This isn\'t your settlement.')
-                continue
-
-            city_upgraded = city_vertex.set_building(BuildingEnum.CITY, self.player_id)
         return city_vertex
-
+    
     def place_settlement(self, gb:CatanBoard, setup:bool = False):
         settlement_placed = False
         while not settlement_placed:
@@ -97,38 +87,9 @@ class Player():
             
             settlement_vertex = gb.tilemap.get_node_from_point(settlement_point)
 
-            if settlement_vertex == None:
-                print('Couldn\'t find that spot!')
-                continue
-            
-            neighbor_found = False
-            for neighbor in settlement_vertex.neighbors:
-                if neighbor.type == NodeEnum.VERTEX:
-                    if not neighbor.is_empty() and neighbor.building.type == BuildingEnum.SETTLEMENT or neighbor.building.type == BuildingEnum.CITY:
-                        neighbor_found = True
-                        break
-                elif neighbor.type == NodeEnum.EDGE:
-                    for other in neighbor.neighbors:
-                        if other.type == NodeEnum.VERTEX:
-                            if not other.is_empty() and other.building.type == BuildingEnum.SETTLEMENT or other.building.type == BuildingEnum.CITY:
-                                neighbor_found = True
-                                break
-            if neighbor_found:
-                print('This spot is too close to another building!')
-                continue
-            
-            if not setup: # additional rules if not during setup phase
-                for neighbor in settlement_vertex.neighbors:
-                    if not(not neighbor.is_empty() and neighbor.player_id == self.player_id and neighbor.building.type == BuildingEnum.ROAD):
-                        print('Need to be at least 2 roads away from another settlement.')
-                        continue
-                    else:
-                        for neighbor2 in neighbor.neighbors:
-                            if not(neighbor2.is_occupied() and neighbor.player_id == self.player_id and neighbor2.building.type == BuildingEnum.ROAD):
-                                print('Need to be at least 2 roads away from another settlement.')
-                                continue
+            if self.check_settlement_vertex(settlement_vertex, setup):
+                settlement_placed = settlement_vertex.set_building(BuildingEnum.SETTLEMENT, self.player_id)
 
-            settlement_placed = settlement_vertex.set_building(BuildingEnum.SETTLEMENT, self.player_id)
         return settlement_vertex
     
     def place_road(self, gb:CatanBoard):
@@ -141,28 +102,94 @@ class Player():
             
             road_edge = gb.tilemap.get_node_from_point(road_point)
 
-            if road_edge == None:
-                print('Couldn\'t find that spot!')
-                continue
+            if self.check_road_edge(road_edge):
+                road_placed = road_edge.set_building(BuildingEnum.ROAD, self.player_id)
 
-            for neighbor in road_edge.neighbors: # can't build a road passed another player's settlement
-                if not neighbor.is_empty() and neighbor.building.type == BuildingEnum.SETTLEMENT and neighbor.building.player_id != self.player_id:
-                    print('This spot is too close to another player\'s settlement!')
-                    continue
-            
-            neighbor_found = False
-            for neighbor in road_edge.neighbors: # need to build next to your own settlements or roads
-                if not neighbor.is_empty() and neighbor.building.type == BuildingEnum.SETTLEMENT and neighbor.building.player_id == self.player_id or\
-                    not neighbor.is_empty() and neighbor.building.type == BuildingEnum.ROAD and neighbor.building.player_id == self.player_id:
+        return road_edge
+    
+
+    def check_city_vertex(self, city_vertex:Node, feedback:bool = False):
+        # check if spot is existing settlement under this player's id
+        if city_vertex == None:
+            if feedback:
+                print('Couldn\'t find that spot!')
+            return False
+
+        if city_vertex.building.type != BuildingEnum.SETTLEMENT:
+            if feedback:
+                print('Choose a settlement to upgrade.')
+            return False
+
+        if city_vertex.player_id != self.player_id:
+            if feedback:
+                print('That isn\'t your settlement.')
+            return False
+
+        return True
+
+    def check_settlement_vertex(self, settlement_vertex:Node, setup:bool, feedback:bool = False):
+        if settlement_vertex == None:
+            if feedback:
+                print('Couldn\'t find that spot!')
+            return False
+        
+        neighbor_found = False
+        for neighbor in settlement_vertex.neighbors:
+            if neighbor.type == NodeEnum.VERTEX:
+                if not neighbor.is_empty() and neighbor.building.type == BuildingEnum.SETTLEMENT or neighbor.building.type == BuildingEnum.CITY:
                     neighbor_found = True
                     break
+            elif neighbor.type == NodeEnum.EDGE:
+                for other in neighbor.neighbors:
+                    if other.type == NodeEnum.VERTEX:
+                        if not other.is_empty() and other.building.type == BuildingEnum.SETTLEMENT or other.building.type == BuildingEnum.CITY:
+                            neighbor_found = True
+                            break
+        if neighbor_found:
+            if feedback:
+                print('That spot is too close to another building!')
+            return False
+        
+        if not setup: # additional rules if not during setup phase
+            for neighbor in settlement_vertex.neighbors:
+                if not(not neighbor.is_empty() and neighbor.player_id == self.player_id and neighbor.building.type == BuildingEnum.ROAD):
+                    if feedback:
+                        print('Need to be at least 2 roads away from another settlement.')
+                    return False
+                else:
+                    for neighbor2 in neighbor.neighbors:
+                        if not(neighbor2.is_occupied() and neighbor.player_id == self.player_id and neighbor2.building.type == BuildingEnum.ROAD):
+                            if feedback:
+                                print('Need to be at least 2 roads away from another settlement.')
+                            return False                            
+        return True
 
-            if not neighbor_found:
+    def check_road_edge(self, road_edge:Node, feedback:bool = False):
+        if road_edge == None:
+            if feedback:
+                print('Couldn\'t find that spot!')
+            return False
+
+        for neighbor in road_edge.neighbors: # can't build a road passed another player's settlement
+            if not neighbor.is_empty() and neighbor.building.type == BuildingEnum.SETTLEMENT and neighbor.building.player_id != self.player_id:
+                if feedback:
+                    print('That spot is too close to another player\'s settlement!')
+                return False
+        
+        neighbor_found = False
+        for neighbor in road_edge.neighbors: # need to build next to your own settlements or roads
+            if not neighbor.is_empty() and neighbor.building.type == BuildingEnum.SETTLEMENT and neighbor.building.player_id == self.player_id or\
+                not neighbor.is_empty() and neighbor.building.type == BuildingEnum.ROAD and neighbor.building.player_id == self.player_id:
+                neighbor_found = True
+                break
+
+        if not neighbor_found:
+            if feedback:
                 print('You need to be closer to your own roads/settlements!')
-                continue
-            
-            road_placed = road_edge.set_building(BuildingEnum.ROAD, self.player_id)
-        return road_edge
+            return False
+        
+        return True
+
 
     def get_location_from_user(self, type):
         resp = input(f'Where do you want your {type.name.lower()}, {self.name}? (c,#) (q to quit)\n')
@@ -177,6 +204,7 @@ class Player():
             except:
                 return Point(-1, -1)
 
+
     def trade(self):
         return True
 
@@ -187,19 +215,17 @@ class Player():
         return True
     
     def play(self, gb:CatanBoard):
+        # Before-roll options: Play Development card or roll 
+
+        # Roll + give out resources OR if 7; move Robber + steal from a player on that tile
+
+        # After-roll options: Buy a purchaseable item or trade with bank or players
+
         print(self)
         return True
 
     def __str__(self):
-
-        resources = {}
-        for resource in self.resource_hand:
-            if resource not in resources.keys():
-                resources[resource] = 1
-            else:
-                resources[resource] += 1
-
-        s = 'The hand is:\n'
-        for type, count in resources.items():
-            s += f'\t{type.value}: {str(count)}\n' 
+        s = f'{self.name}\'s hand is:\n'
+        for type, count in dict(Counter(self.resource_hand).items()).items():
+            s += f'\t({str(count)}) {type.value}\n' 
         return s + '\n'

@@ -32,7 +32,7 @@ class DisplayGrid():
     def __str__(self):
         s = '\n'
 
-        for i in range(len(self.grid)):
+        for i in range(len(self.grid)-1, -1, -1):
             if i > 9:
                 s += str(i) + ' | '
             else:

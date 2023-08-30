@@ -43,11 +43,9 @@ class Node(Point):
 
     def set_building(self, building_type:BuildingEnum, player_id:int):
         if not self.is_empty() and not (building_type == BuildingEnum.CITY and self.building.type == BuildingEnum.SETTLEMENT):
-            print('This spot is taken, sorry.')
             return False
         
         if building_type not in self.type.value:
-            print('That\'s not a valid placement.')
             return False
 
         self.building = Building(building_type, player_id)

@@ -33,40 +33,6 @@ class AIPlayer(Player):
         # TODO: need to see if we have a port
         return True
 
-    def place_buildings(self, gb:CatanBoard, types:[BuildingEnum], receive_resources:bool=False):
-        match types:
-            case [ BuildingEnum.ROAD, BuildingEnum.ROAD ]: # roadbuilder
-                self.place_road(gb, True)
-                gb.update_grid()
-                print(gb)
-                self.place_road(gb)
-                return True
-            case [ BuildingEnum.SETTLEMENT, BuildingEnum.ROAD ]: # setup
-                settlement_vertex = self.place_settlement(gb, True)
-                if receive_resources:
-                    for id in settlement_vertex.tiles_touching:
-                        self.resource_hand.append(gb.tilemap.get_tile_from_id(id).resource)
-                gb.update_grid()
-                print(gb)
-                self.place_road(gb)
-                return True
-            case _: # all other cases
-                if len(types) > 1:
-                    return False
-
-        building = types[0]
-        if not building.cost in self.resource_hand: # cannot afford the building
-            return False
-
-        match building:
-            case BuildingEnum.ROAD:
-                return self.place_road(gb)
-            case BuildingEnum.SETTLEMENT:
-                return self.place_settlement(gb)
-            case BuildingEnum.CITY:
-                return self.place_city(gb)
-        return False
-
     def place_city(self, gb:CatanBoard):
         city_upgraded = False
         while not city_upgraded:
@@ -77,17 +43,9 @@ class AIPlayer(Player):
             
             city_vertex = gb.tilemap.get_node_from_point(city_point)
             
-            # check if spot is existing settlement under this player's id
-            if city_vertex == None:
-                continue
+            if self.check_city_vertex(city_vertex):
+                city_upgraded = city_vertex.set_building(BuildingEnum.CITY, self.player_id)
 
-            if city_vertex.building.type != BuildingEnum.SETTLEMENT:
-                continue
-
-            if city_vertex.player_id != self.player_id:
-                continue
-
-            city_upgraded = city_vertex.set_building(BuildingEnum.CITY, self.player_id)
         return city_vertex
 
     def place_settlement(self, gb:CatanBoard, setup:bool = False):
@@ -96,66 +54,27 @@ class AIPlayer(Player):
             tile_production_points = self.get_tile_production_points(gb)
             points = list(tile_production_points.keys())
             points.sort(reverse=True)
-            settlement_vertex = tile_production_points[points[0]] # highest point value
+            for point in points:
+                settlement_vertex = tile_production_points[point]
+                if self.check_settlement_vertex(settlement_vertex, setup):
+                    settlement_placed = settlement_vertex.set_building(BuildingEnum.SETTLEMENT, self.player_id)
+                    break
 
-            if settlement_vertex == None:
-                continue
-            
-            neighbor_found = False
-            for neighbor in settlement_vertex.neighbors:
-                if neighbor.type == NodeEnum.VERTEX:
-                    if not neighbor.is_empty() and neighbor.building.type == BuildingEnum.SETTLEMENT or neighbor.building.type == BuildingEnum.CITY:
-                        neighbor_found = True
-                        break
-                elif neighbor.type == NodeEnum.EDGE:
-                    for other in neighbor.neighbors:
-                        if other.type == NodeEnum.VERTEX:
-                            if not other.is_empty() and other.building.type == BuildingEnum.SETTLEMENT or other.building.type == BuildingEnum.CITY:
-                                neighbor_found = True
-                                break
-            if neighbor_found:
-                continue
-            
-            if not setup: # additional rules if not during setup phase
-                for neighbor in settlement_vertex.neighbors:
-                    if not(not neighbor.is_empty() and neighbor.player_id == self.player_id and neighbor.building.type == BuildingEnum.ROAD):
-                        continue
-                    else:
-                        for neighbor2 in neighbor.neighbors:
-                            if not(neighbor2.is_occupied() and neighbor.player_id == self.player_id and neighbor2.building.type == BuildingEnum.ROAD):
-                                continue
-
-            settlement_placed = settlement_vertex.set_building(BuildingEnum.SETTLEMENT, self.player_id)
         return settlement_vertex
     
     def place_road(self, gb:CatanBoard):
+        # TODO: Apply road to only the most recent settlement on setup
+        road_edge = None
         road_placed = False
         while not road_placed:
-            road_point = Point(12,10) # TODO
+            for node in gb.tilemap.nodes:
+                if not node.is_empty() and node.building.player_id == self.player_id and node.building.type == BuildingEnum.SETTLEMENT:
+                    for neighbor in node.neighbors:
+                        road_edge = neighbor
+                        if self.check_road_edge(road_edge):
+                            road_placed = road_edge.set_building(BuildingEnum.ROAD, self.player_id)
+                            break
 
-            if not road_point:
-                return False
-            
-            road_edge = gb.tilemap.get_node_from_point(road_point)
-
-            if road_edge == None:
-                continue
-
-            for neighbor in road_edge.neighbors: # can't build a road passed another player's settlement
-                if not neighbor.is_empty() and neighbor.building.type == BuildingEnum.SETTLEMENT and neighbor.building.player_id != self.player_id:
-                    continue
-            
-            neighbor_found = False
-            for neighbor in road_edge.neighbors: # need to build next to your own settlements or roads
-                if not neighbor.is_empty() and neighbor.building.type == BuildingEnum.SETTLEMENT and neighbor.building.player_id == self.player_id or\
-                    not neighbor.is_empty() and neighbor.building.type == BuildingEnum.ROAD and neighbor.building.player_id == self.player_id:
-                    neighbor_found = True
-                    break
-
-            if not neighbor_found:
-                continue
-            
-            road_placed = road_edge.set_building(BuildingEnum.ROAD, self.player_id)
         return road_edge
 
     # def trade(self):
