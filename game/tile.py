@@ -4,13 +4,13 @@ import random
 
 class Tile:
     
-    DIMENSIONS_CORNER = [ Point(-3, 0), Point(-1, -2), Point(1, -2), 
-        Point(3, 0), Point(1, 2), Point(-1, 2) ]
+    EDGE_DIMENSIONS = [ Point(-2, 0), Point(-1, -2), Point(1, -2), 
+        Point(2, 0), Point(1, 2), Point(-1, 2) ]
     
-    DIMENSIONS_EDGES = [ Point(-2, -1), Point(0, -2), Point(2, -1), 
-        Point(2, 1), Point(0, 2), Point(-2, 1) ]
+    VERTICE_DIMENSIONS = [ Point(-2, -1), Point(0, -3), Point(2, -1), 
+        Point(2, 1), Point(0, 3), Point(-2, 1) ]
     
-    DIRECTIONS = [ '-', '|', '-', '-', '|', '-']
+    EDGE_ICONS = [ '|', '-', '-', '|', '-', '-' ]
 
     def __init__(self, center:Point, roll:int, id:int, resource:ResourceEnum, nodes:[Node]):
         self.center = center
@@ -60,48 +60,45 @@ class Tile:
     
 class TileMap():
 
-    small_chips = [ 0, 2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12 ]
+    chips = [ 0, 2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12 ]
     
-    small_tile_resources = [ ResourceEnum.WHEAT, ResourceEnum.WHEAT, ResourceEnum.WHEAT, ResourceEnum.WHEAT, 
+    tile_resources = [ ResourceEnum.WHEAT, ResourceEnum.WHEAT, ResourceEnum.WHEAT, ResourceEnum.WHEAT, 
                 ResourceEnum.SHEEP, ResourceEnum.SHEEP, ResourceEnum.SHEEP, ResourceEnum.SHEEP,
                 ResourceEnum.WOOD, ResourceEnum.WOOD, ResourceEnum.WOOD, ResourceEnum.WOOD, 
                 ResourceEnum.ORE, ResourceEnum.ORE, ResourceEnum.ORE, 
                 ResourceEnum.BRICK, ResourceEnum.BRICK, ResourceEnum.BRICK, ResourceEnum.DESERT ]
     
-    def __init__(self):
-        self.tiles = []
-        self.nodes = []
-        row_lengths = [ 3, 4, 5, 4, 3 ]
+    START_POINT = Point(6, 3)
+
+    MIN_ACROSS = 21
+    MIN_DOWN = 23
+    
+    def __init__(self, across, down):
 
         # Get all locations for the nodes
-        def get_node_locations(self, row_lengths):
-            start_point = Point(5, 8)
-            tile_centers = []
-            start = start_point.__copy__()
-            all_nodes = []
+        orig_point = self.START_POINT.__copy__()
+        # orig_point.shift(0, 0)
+        copy_point = orig_point.__copy__()
 
-            for i in range(len(row_lengths)):
-                for _ in range(row_lengths[i]):
-                    for i in range(6): # up to 6 unique Nodes for each: edges and vertices
-                        all_nodes.append(Node(start_point.x + Tile.DIMENSIONS_CORNER[i].x, start_point.y + Tile.DIMENSIONS_CORNER[i].y, NodeEnum.VERTEX))
-                        all_nodes.append(Node(start_point.x + Tile.DIMENSIONS_EDGES[i].x, start_point.y + Tile.DIMENSIONS_EDGES[i].y, NodeEnum.EDGE))
-                    tile_centers.append(start_point.__copy__())
-                    start_point.shift(0, 4)
+        tile_centers = []
+        all_nodes = []
+        row_lengths = [ 3, 4, 5, 4, 3 ]
+        for i in range(len(row_lengths)): # 0 - 4
+            for _ in range(row_lengths[i]): # [ 3, 4, 5, 4, 3]
+                for j in range(len(Tile.VERTICE_DIMENSIONS)): # same amount of edges and vertices
+                    all_nodes.append(Node(copy_point.x + Tile.VERTICE_DIMENSIONS[j].x, copy_point.y + Tile.VERTICE_DIMENSIONS[j].y, NodeEnum.VERTEX))
+                    all_nodes.append(Node(copy_point.x + Tile.EDGE_DIMENSIONS[j].x, copy_point.y + Tile.EDGE_DIMENSIONS[j].y, NodeEnum.EDGE))
+                
+                tile_centers.append(copy_point.__copy__())
+                copy_point.shift(4, 0)
 
-                start.shift(4, -2) if i < 2 else start.shift(4, 2)
-                start_point = start.__copy__()
+            orig_point.shift(-2, 4) if i < 2 else orig_point.shift(2, 4)
+            copy_point = orig_point.__copy__()
 
-            for node in set(all_nodes):
-                self.nodes.append(Node(node.x, node.y, node.type))
-
-            return tile_centers
-        
-        tile_centers = get_node_locations(self, row_lengths)
+        self.nodes = list(set(all_nodes))
 
         # Distributes chips according to Catan rules
         def chips_assigned_fairly(tile_numbers):
-            # two triangles of numbers (above and below mid row)
-            # 4 vertices of #s to check
             start_top = 3
             start_bottom = 12
 
@@ -117,24 +114,24 @@ class TileMap():
                 return True
 
             for middle in range(start_top, tile_numbers[1] + start_top): # tile_numbers[1] = 4
-                mid = self.small_chips[middle]
-                top_left = self.small_chips[middle - 4] if middle != start_top else 0
-                top_right = self.small_chips[middle - 3] if middle != start_top + tile_numbers[1] - 1 else 0
-                mid_left = self.small_chips[middle - 1] if middle != start_top else 0
-                btm_left = self.small_chips[middle + 4] 
-                btm_right = self.small_chips[middle + 5]
+                mid = self.chips[middle]
+                top_left = self.chips[middle - 4] if middle != start_top else 0
+                top_right = self.chips[middle - 3] if middle != start_top + tile_numbers[1] - 1 else 0
+                mid_left = self.chips[middle - 1] if middle != start_top else 0
+                btm_left = self.chips[middle + 4] 
+                btm_right = self.chips[middle + 5]
 
                 shuffled = find_illegal_chips(top_left, top_right, mid_left, mid, btm_left, btm_right)
                 if not shuffled:
                     return False
                     
             for middle in range(start_bottom, tile_numbers[3] + start_bottom): # tile_numbers[3] = 4
-                mid = self.small_chips[middle]
-                top_left = self.small_chips[middle + -5] 
-                top_right = self.small_chips[middle + -4]
-                mid_left = self.small_chips[middle - 1] if middle != start_bottom else 0
-                btm_left = self.small_chips[middle + 3] if middle != start_bottom else 0
-                btm_right = self.small_chips[middle + 4] if middle != start_bottom + tile_numbers[3] - 1 else 0
+                mid = self.chips[middle]
+                top_left = self.chips[middle - 5] 
+                top_right = self.chips[middle - 4]
+                mid_left = self.chips[middle - 1] if middle != start_bottom else 0
+                btm_left = self.chips[middle + 3] if middle != start_bottom else 0
+                btm_right = self.chips[middle + 4] if middle != start_bottom + tile_numbers[3] - 1 else 0
 
                 shuffled = find_illegal_chips(top_left, top_right, mid_left, mid, btm_left, btm_right)
                 if not shuffled:
@@ -145,49 +142,40 @@ class TileMap():
         iters = 0
         while not chips_assigned_fairly(row_lengths):
             iters += 1
-            random.shuffle(self.small_chips)
+            random.shuffle(self.chips)
 
-        self.small_chips.reverse()
+        self.chips.reverse()
 
         # DESERT SHOULD APPEAR WHERE 0 CHIP IS
-        random.shuffle(self.small_tile_resources)
-        self.small_tile_resources.remove(ResourceEnum.DESERT)
-        self.small_tile_resources.insert(self.small_chips.index(0), ResourceEnum.DESERT)
+        random.shuffle(self.tile_resources)
+        self.tile_resources.remove(ResourceEnum.DESERT)
+        self.tile_resources.insert(self.chips.index(0), ResourceEnum.DESERT)
 
         # Creates the Tiles with shared nodes
-        def create_tiles(self, tile_centers):
-            tile_id = 0
-            tiles = []
-            for center in tile_centers:
-                tile_nodes = []
-                for node in self.nodes:
-                    for i in range(6):
-                        if node.type == NodeEnum.VERTEX and node.x == center.x + Tile.DIMENSIONS_CORNER[i].x and node.y == center.y + Tile.DIMENSIONS_CORNER[i].y:
-                            tile_nodes.append(node)
-                        elif node.type == NodeEnum.EDGE and node.x == center.x + Tile.DIMENSIONS_EDGES[i].x and node.y == center.y + Tile.DIMENSIONS_EDGES[i].y:
-                            node.icon = Tile.DIRECTIONS[i]
-                            tile_nodes.append(node)
-
-                tiles.append(Tile(center.__copy__(), self.small_chips.pop(), tile_id, self.small_tile_resources.pop(), nodes=tile_nodes))
-                tile_id += 1
-            return tiles
-    
-        self.tiles = create_tiles(self, tile_centers)
-
-        # Adds tiles_touching and neighbors to nodes
-        def add_neighbors(self):
-            for tile in self.tiles:
-                for node in tile.nodes:
-                    for other_tile in self.tiles:
-                        for other_node in other_tile.nodes:
-                            if node == other_node:
-                                node.tiles_touching.append(other_tile.id)
-                    node.tiles_touching = list(set(node.tiles_touching))
-
+        self.tiles = []
+        for i in range(len(tile_centers)):
+            tile_nodes = []
             for node in self.nodes:
-                node.neighbors = self.calculate_neighbors(node).copy()
+                for j in range(len(Tile.VERTICE_DIMENSIONS)):
+                    if node.type == NodeEnum.VERTEX and node.x == tile_centers[i].x + Tile.VERTICE_DIMENSIONS[j].x and node.y == tile_centers[i].y + Tile.VERTICE_DIMENSIONS[j].y:
+                        tile_nodes.append(node)
+                    elif node.type == NodeEnum.EDGE and node.x == tile_centers[i].x + Tile.EDGE_DIMENSIONS[j].x and node.y == tile_centers[i].y + Tile.EDGE_DIMENSIONS[j].y:
+                        node.icon = Tile.EDGE_ICONS[j]
+                        tile_nodes.append(node)
 
-        add_neighbors(self)
+            self.tiles.append(Tile(tile_centers[i], self.chips.pop(), i, self.tile_resources.pop(), tile_nodes))
+    
+        # Adds tiles_touching and neighbors to nodes
+        for tile in self.tiles:
+            for node in tile.nodes:
+                for other_tile in self.tiles:
+                    for other_node in other_tile.nodes:
+                        if node == other_node:
+                            node.tiles_touching.append(other_tile.id)
+                node.tiles_touching = list(set(node.tiles_touching))
+
+        for node in self.nodes:
+            node.neighbors = self.calculate_neighbors(node)
 
         print(f'Completed TileMap after ({iters}) iteration(s).')
 
@@ -195,20 +183,16 @@ class TileMap():
     def calculate_neighbors(self, node:Node):
         neighbors = []
 
-        def calculate_distances(array:[Node]):
-            dists = {}
-            for other in array:
-                dist = math.floor(Point.dist(node.x, node.y, other.x, other.y))
-                if dist in dists:
-                    dists[dist].append((node, other))
-                elif dist != 0:
-                    dists[dist] = [(node, other)]
+        dists = {}
+        for other in self.nodes:
+            dist = math.floor(Point.dist(node.x, node.y, other.x, other.y))
+            if dist in dists:
+                dists[dist].append((node, other))
+            elif dist != 0:
+                dists[dist] = [(node, other)]
 
-            distances = list(set(dists.keys()))
-            distances.sort()
-            return distances, dists
-
-        distances, dists = calculate_distances(self.nodes)
+        distances = list(set(dists.keys()))
+        distances.sort()
 
         for distances in distances[:2]:
             for node, other in dists[distances]:
@@ -234,19 +218,3 @@ class TileMap():
     def __iter__(self):
         for tile in self.tiles:
             yield tile
-
-
-	# public boolean checkOtherSettlements(KeyPoint kp) {
-	# 	CustomPoint cp = null;
-	# 	for (Point p : Tile.CORNER_CHECKS) {
-	# 		cp = new CustomPoint(kp.getPoint().x + p.x, kp.getPoint().y + p.y);
-	# 		if (inBounds(cp)) {
-	# 			for (KeyPoint vertex : this.vertices) {
-	# 				if (isSameLocation(cp, vertex.getPoint()) && vertex.isOccupied()) {
-	# 					return false;
-	# 				}
-	# 			}
-	# 		}
-	# 	}
-	# 	return true;
-	# }

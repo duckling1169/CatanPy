@@ -10,9 +10,9 @@ class CatanBoard:
 	sides = [] # Side()?
 	players = [] # Player()!
 	
-	def __init__(self, length, width, scale=1, empty_icon=' '):
-		self.tilemap = TileMap()
-		self.grid = DisplayGrid(length, width, scale, empty_icon)
+	def __init__(self, across=TileMap.MIN_ACROSS, down=TileMap.MIN_DOWN, scale=1, empty_icon=' '):
+		self.tilemap = TileMap(across, down)
+		self.grid = DisplayGrid(across, down, scale, empty_icon)
 
 		self.deck = []
 		for _ in range(14):
@@ -30,13 +30,16 @@ class CatanBoard:
 
 	def update_grid(self):
 		for tile in self.tilemap:
-
+			
 			self.grid.update_grid(tile.resource.value, tile.center.__copy__())
 			lower_center = tile.center.__copy__()
-			lower_center.shift(1, 0)
-			self.grid.update_grid(tile.dice_roll, lower_center.__copy__())
+			lower_center.shift(0, 1)
+			if tile.has_robber:
+				self.grid.update_grid('R', lower_center.__copy__())
+			else:
+				self.grid.update_grid(tile.dice_roll, lower_center.__copy__())
 			upper_center = tile.center.__copy__()
-			upper_center.shift(-1, 0)
+			upper_center.shift(0, -1)
 			self.grid.update_grid(f'({str(tile.resource_points)})', upper_center.__copy__())
 
 			for node in tile.nodes:

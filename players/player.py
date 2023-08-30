@@ -165,14 +165,14 @@ class Player():
         return True
 
     def get_location_from_user(self, type):
-        resp = input(f'Where do you want your {type.name.lower()}, {self.name}? (#,c) (q to quit)\n')
+        resp = input(f'Where do you want your {type.name.lower()}, {self.name}? (c,#) (q to quit)\n')
         if resp == 'q':
             return None
         
         if ',' in resp:
             try:
-                x = int(resp.split(',')[0])
-                y = DisplayGrid.x_scale_convert(resp.split(',')[1])
+                x = DisplayGrid.x_scale_convert(resp.split(',')[0])
+                y = int(resp.split(',')[1])
                 return Point(x, y)
             except:
                 return Point(-1, -1)
