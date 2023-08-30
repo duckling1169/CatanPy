@@ -2,6 +2,9 @@ from game.node import Point
 
 class DisplayGrid():
 
+    MIN_ACROSS = 21
+    MIN_DOWN = 23
+
     def __init__(self, across, down, scale = 1, empty_icon = ' '):
         self.grid = []
         self.scale = scale

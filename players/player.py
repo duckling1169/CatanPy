@@ -1,5 +1,4 @@
 from game.enums import ResourceEnum, BuildingEnum, NodeEnum
-from game.building import Building
 from game.display_grid import DisplayGrid
 from game.node import Point
 from game.catanboard import CatanBoard
@@ -26,7 +25,7 @@ class Player():
         # TODO: need to see if we have a port
         return True
 
-    def place_buildings(self, gb:CatanBoard, types:[BuildingEnum]):
+    def place_buildings(self, gb:CatanBoard, types:[BuildingEnum], receive_resources:bool=False):
         match types:
             case [ BuildingEnum.ROAD, BuildingEnum.ROAD ]: # roadbuilder
                 self.place_road(gb, True)
@@ -35,7 +34,10 @@ class Player():
                 self.place_road(gb)
                 return True
             case [ BuildingEnum.SETTLEMENT, BuildingEnum.ROAD ]: # setup
-                self.place_settlement(gb, True)
+                settlement_vertex = self.place_settlement(gb, True)
+                if receive_resources:
+                    for id in settlement_vertex.tiles_touching:
+                        self.resource_hand.append(gb.tilemap.get_tile_from_id(id).resource)
                 gb.update_grid()
                 print(gb)
                 self.place_road(gb)
@@ -83,8 +85,7 @@ class Player():
                 continue
 
             city_upgraded = city_vertex.set_building(BuildingEnum.CITY, self.player_id)
-
-        return True
+        return city_vertex
 
     def place_settlement(self, gb:CatanBoard, setup:bool = False):
         settlement_placed = False
@@ -128,8 +129,7 @@ class Player():
                                 continue
 
             settlement_placed = settlement_vertex.set_building(BuildingEnum.SETTLEMENT, self.player_id)
-
-        return True
+        return settlement_vertex
     
     def place_road(self, gb:CatanBoard):
         road_placed = False
@@ -162,7 +162,7 @@ class Player():
                 continue
             
             road_placed = road_edge.set_building(BuildingEnum.ROAD, self.player_id)
-        return True
+        return road_edge
 
     def get_location_from_user(self, type):
         resp = input(f'Where do you want your {type.name.lower()}, {self.name}? (c,#) (q to quit)\n')
@@ -185,10 +185,21 @@ class Player():
 
     def play_development_card(self):
         return True
+    
+    def play(self, gb:CatanBoard):
+        print(self)
+        return True
 
     def __str__(self):
-        self.resource_hand.sort()
-        s = 'The hand is:\n'
+
+        resources = {}
         for resource in self.resource_hand:
-            s += f'\t{str(resource)}\n' 
+            if resource not in resources.keys():
+                resources[resource] = 1
+            else:
+                resources[resource] += 1
+
+        s = 'The hand is:\n'
+        for type, count in resources.items():
+            s += f'\t{type.value}: {str(count)}\n' 
         return s + '\n'

@@ -10,9 +10,9 @@ class CatanBoard:
 	sides = [] # Side()?
 	players = [] # Player()!
 	
-	def __init__(self, across=TileMap.MIN_ACROSS, down=TileMap.MIN_DOWN, scale=1, empty_icon=' '):
-		self.tilemap = TileMap(across, down)
-		self.grid = DisplayGrid(across, down, scale, empty_icon)
+	def __init__(self, border=0, scale=1, empty_icon=' '):
+		self.tilemap = TileMap(border)
+		self.grid = DisplayGrid(DisplayGrid.MIN_ACROSS + border*2, DisplayGrid.MIN_DOWN + border*2, scale, empty_icon)
 
 		self.deck = []
 		for _ in range(14):

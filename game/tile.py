@@ -69,15 +69,13 @@ class TileMap():
                 ResourceEnum.BRICK, ResourceEnum.BRICK, ResourceEnum.BRICK, ResourceEnum.DESERT ]
     
     START_POINT = Point(6, 3)
-
-    MIN_ACROSS = 21
-    MIN_DOWN = 23
     
-    def __init__(self, across, down):
+    def __init__(self, border):
+        # shift the start point over if there's a border
+        self.START_POINT.shift(border, border)
 
         # Get all locations for the nodes
         orig_point = self.START_POINT.__copy__()
-        # orig_point.shift(0, 0)
         copy_point = orig_point.__copy__()
 
         tile_centers = []

@@ -45,11 +45,18 @@ class Runner():
         for player in self.players:
             self.gb.update_grid()
             print(self.gb)
-            player.place_buildings(self.gb, [BuildingEnum.SETTLEMENT, BuildingEnum.ROAD])
+            player.place_buildings(self.gb, [BuildingEnum.SETTLEMENT, BuildingEnum.ROAD], True)
+
+        self.players.reverse()
+
 
     def run(self):
         
         self.gb.update_grid()
         print(self.gb)
+
+        # while True:
+        for player in self.players:
+            player.play(self.gb)
 
 Runner(True).run()

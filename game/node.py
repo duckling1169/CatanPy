@@ -28,7 +28,7 @@ class Point:
 
     def __str__(self):
         from game.display_grid import DisplayGrid
-        return f'Point({DisplayGrid.convert_to_x_scale(self.x)}, {str(self.x)}, {str(self.y)})'
+        return f'Point({DisplayGrid.convert_to_x_scale(self.x)}, {str(self.y)})'
 
 class Node(Point):
 
