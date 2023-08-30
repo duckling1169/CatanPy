@@ -1,4 +1,4 @@
-from game.node import Point
+from game.point import Point
 
 class DisplayGrid():
 

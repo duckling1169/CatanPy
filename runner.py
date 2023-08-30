@@ -1,5 +1,3 @@
-from game.tile import *
-from game.node import *
 from game.enums import *
 from game.display_grid import *
 from game.catanboard import CatanBoard

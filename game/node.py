@@ -1,44 +1,18 @@
 from game.enums import BuildingEnum
 from game.building import Building
 from game.enums import NodeEnum
-import math
-
-class Point:
-
-    def __init__(self, x_init, y_init):
-        self.x = x_init
-        self.y = y_init
-
-    def shift(self, x, y):
-        self.x += x
-        self.y += y
-
-    @staticmethod
-    def dist(p1_x, p1_y, p2_x, p2_y):
-        return round(math.dist([p1_x, p1_y], [p2_x, p2_y]), 2)
-
-    def __copy__(self):
-        return Point(self.x, self.y)
-    
-    def __eq__(self, obj):
-        return isinstance(obj, Point) and obj.x == self.x and obj.y == self.y
-    
-    def __hash__(self):
-        return hash((self.x, self.y))
-
-    def __str__(self):
-        from game.display_grid import DisplayGrid
-        return f'Point({DisplayGrid.convert_to_x_scale(self.x)}, {str(self.y)})'
+from game.point import Point
+from game.port import Port
 
 class Node(Point):
 
-    def __init__(self, x, y, type:NodeEnum, neighbors:[] = [], tile_ids:[int] = [], icon:str = '0'):
+    def __init__(self, x:int, y:int, type:NodeEnum):
         self.type = type
-        self.neighbors = neighbors
-        self.icon = icon
-        self.tiles_touching = tile_ids.copy()
+        self.icon = '·'
+        self.neighbors = []
+        self.tiles_touching = []
         self.building = Building(BuildingEnum.EMPTY, -1)
-        self.port = None # TODO
+        self.port = None
         super().__init__(x, y)
 
     def set_building(self, building_type:BuildingEnum, player_id:int):

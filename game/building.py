@@ -1,6 +1,5 @@
 from game.purchaseables import Purchaseables
 from game.enums import ResourceEnum, BuildingEnum
-from game.node import *
 
 class Building(Purchaseables):
 
