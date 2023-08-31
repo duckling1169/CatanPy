@@ -5,7 +5,7 @@ class DisplayGrid():
     MIN_ACROSS = 25
     MIN_DOWN = 23
 
-    def __init__(self, across:int, down:int, scale:int, empty_icon:int):
+    def __init__(self, across:int, down:int, scale:int, empty_icon:str):
         self.grid = []
         self.scale = scale
         self.empty_icon = empty_icon
