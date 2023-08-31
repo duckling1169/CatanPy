@@ -35,8 +35,6 @@ class Tester:
         print(gb)
         return True
 
-
-
     def test_create_road():
         gb = SettleGame() 
 

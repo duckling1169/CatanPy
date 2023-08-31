@@ -26,7 +26,7 @@ class Tile:
                     self.resource_points += 1
 
     def get_roll_probability(self) -> float:
-        if self.resource == ResourceEnum.DESERT | self.resource == ResourceEnum.EMPTY:
+        if self.resource == ResourceEnum.DESERT or self.resource == ResourceEnum.EMPTY or self.resource == ResourceEnum.THREE_FOR_ONE:
             return 0
         
         return (float) (self.dice_roll - 1) / 36.0 if self.dice_roll < 7 else (float) (13 - self.dice_roll) / 36.0
