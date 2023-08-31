@@ -1,9 +1,6 @@
 from settlegame import SettleGame
 from game.enums import *
-from game.display_grid import *
-from players.player import Player
-from players.aiplayer import AIPlayer
-from game.developmentcard import DevelopmentCard
+from game.purchaseables import GrowthCard
 class Runner:
 
     def __init__(self):
@@ -87,13 +84,13 @@ class Tester:
 
     def test_development_cards():
         gb = SettleGame()
-        gb.players[0].unplayed_dev_cards.append(DevelopmentCard(GrowthCardEnum.KNIGHT))
+        gb.players[0].unplayed_dev_cards.append(GrowthCard(GrowthCardEnum.KNIGHT))
         gb.players[0].play_development_card(gb)
-        gb.players[0].unplayed_dev_cards.append(DevelopmentCard(GrowthCardEnum.YEAR_OF_PLENTY))
+        gb.players[0].unplayed_dev_cards.append(GrowthCard(GrowthCardEnum.YEAR_OF_PLENTY))
         gb.players[0].play_development_card(gb)
-        gb.players[0].unplayed_dev_cards.append(DevelopmentCard(GrowthCardEnum.ROAD_BUILDER))
+        gb.players[0].unplayed_dev_cards.append(GrowthCard(GrowthCardEnum.ROAD_BUILDER))
         gb.players[0].play_development_card(gb)
-        gb.players[0].unplayed_dev_cards.append(DevelopmentCard(GrowthCardEnum.MONOPOLY))
+        gb.players[0].unplayed_dev_cards.append(GrowthCard(GrowthCardEnum.MONOPOLY))
         gb.players[0].play_development_card(gb)
 
 tester = Tester()

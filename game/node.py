@@ -1,5 +1,5 @@
 from game.enums import BuildingEnum
-from game.building import Building
+from game.purchaseables import Building
 from game.enums import NodeEnum
 from game.point import Point
 from game.port import Port

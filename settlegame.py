@@ -3,7 +3,7 @@ from game.board import Board
 from game.display_grid import DisplayGrid
 from game.enums import GrowthCardEnum, ResourceEnum, BuildingEnum
 from game.point import Point
-from game.developmentcard import DevelopmentCard
+from game.purchaseables import GrowthCard
 import random
 
 class SettleGame:
@@ -21,15 +21,15 @@ class SettleGame:
 
 		self.deck = []
 		for _ in range(14):
-			self.deck.append(DevelopmentCard(GrowthCardEnum.KNIGHT))
+			self.deck.append(GrowthCard(GrowthCardEnum.KNIGHT))
 		for _ in range(5):
-			self.deck.append(DevelopmentCard(GrowthCardEnum.VICTORY_POINT))
+			self.deck.append(GrowthCard(GrowthCardEnum.VICTORY_POINT))
 		for _ in range(2):
-			self.deck.append(DevelopmentCard(GrowthCardEnum.MONOPOLY))
+			self.deck.append(GrowthCard(GrowthCardEnum.MONOPOLY))
 		for _ in range(2):
-			self.deck.append(DevelopmentCard(GrowthCardEnum.ROAD_BUILDER))
+			self.deck.append(GrowthCard(GrowthCardEnum.ROAD_BUILDER))
 		for _ in range(2):
-			self.deck.append(DevelopmentCard(GrowthCardEnum.YEAR_OF_PLENTY))
+			self.deck.append(GrowthCard(GrowthCardEnum.YEAR_OF_PLENTY))
 
 		random.shuffle(self.deck)
 

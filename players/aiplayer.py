@@ -1,5 +1,5 @@
 from game.enums import ResourceEnum, BuildingEnum
-from game.building import Building
+from game.purchaseables import Building
 from players.player import Player
 from game.enums import NodeEnum
 from game.node import Node

@@ -2,7 +2,6 @@ from game.port import Port
 from game.enums import SideEnum, SideDirectionEnum, ResourceEnum, PortDirectionEnum, PortEnum
 from game.tile import Tile
 from game.point import Point
-from game.node import Node
 class Side():
 
     CONNECTION_ICON = '·'
