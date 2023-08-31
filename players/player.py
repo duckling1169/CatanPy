@@ -15,7 +15,6 @@ class Player():
         self.buildings = []
         self.unplayed_dev_cards = []
         self.played_dev_cards = []
-        self.victory_point_dev_cards = []
         self.exchange_rates = {
             ResourceEnum.SHEEP: 4,
             ResourceEnum.WOOD: 4,
@@ -173,8 +172,8 @@ class Player():
         return True
 
 
-    def get_location_from_user(self, name) -> Point:
-        resp = input(f'Where do you want the {name} to go, {self.name} ({self.id})? (c,#) (q to quit)\n')
+    def get_location_from_user(self, name:str, can_quit:bool = True) -> Point:
+        resp = input(f'Where do you want the {name} to go, {self.name} ({self.id})? (c,#) {"(q to quit)" if can_quit else ""}\n')
         if resp == 'q':
             return None
 
@@ -190,9 +189,11 @@ class Player():
         victory_points = 0
         for building in self.buildings:
             victory_points += building.victory_points
-
-        victory_points += len(self.victory_point_dev_cards)
-
+        
+        for dev_card in self.played_dev_cards:
+            if dev_card.type == DevelopmentCardEnum.VICTORY_POINT:
+                victory_points += 1
+        
         # TODO: check largest army + longest road | update_x()?
 
         return victory_points
@@ -222,17 +223,13 @@ class Player():
         robber_moved = False
         tile = None
         while not robber_moved:
-            tile_point = self.get_location_from_user('Robber')
-
-            print(tile_point)
+            tile_point = self.get_location_from_user('Robber', False)
             
             if not tile_point: # can't quit out
                 print('Need to place the robber.')
                 continue
                         
             tile = gb.tilemap.get_tile_from_point(tile_point)
-
-            print(tile)
             
             if tile.id != gb.robber.get_current_tile_id():
                 gb.robber.move(tile.id)
@@ -244,7 +241,7 @@ class Player():
                 player_ids.append(node.building.player_id)
 
         # show all players with settlements/cities on that tile
-        print('You can steal from one of these players:\n')
+        print('You can steal from one of these players:')
         players_to_steal_from = []
         player_ids_to_steal_from = []
         for id in list(set(player_ids)):
@@ -272,8 +269,10 @@ class Player():
         return True
 
     def play_development_card(self, gb:CatanGame) -> bool:
-        for card in self.unplayed_dev_cards:
-            print(card)
+        print('What card do you want to play?')
+        for card, count in dict(Counter(self.unplayed_dev_cards).items()).items():
+            print(f'\t{str(card.name)} ({count}): {card.type.value}')
+        print()
         
         match(self.unplayed_dev_cards[0].type):
             case DevelopmentCardEnum.KNIGHT: 
