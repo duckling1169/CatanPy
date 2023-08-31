@@ -1,7 +1,7 @@
 from game.robber import Robber
 from game.board import Board
 from game.display_grid import DisplayGrid
-from game.enums import DevelopmentCardEnum, ResourceEnum
+from game.enums import DevelopmentCardEnum, ResourceEnum, BuildingEnum
 from game.point import Point
 from game.developmentcard import DevelopmentCard
 import random
@@ -45,6 +45,23 @@ class CatanGame:
 				self.players.append(AIPlayer(resp, id)) if resp == 'ai' else self.players.append(Player(resp, id))
 			id += 1
 
+	def setup_game(self) -> None:
+		for player in self.players:
+			self.update_grid()
+			print(self)
+			player.place_buildings(self, [BuildingEnum.SETTLEMENT, BuildingEnum.ROAD])
+
+		self.gb.players.reverse()
+
+		for player in self.players:
+			self.update_grid()
+			print(self)
+			player.place_buildings(self, [BuildingEnum.SETTLEMENT, BuildingEnum.ROAD], True)
+
+		self.gb.players.reverse()
+
+		return None
+
 	def update_grid(self) -> None:
 		for tile in self.tilemap:
 			
@@ -72,6 +89,8 @@ class CatanGame:
 				self.grid.update_grid(port.icon, port.center)
 			for point, icon in side.connections:
 				self.grid.update_grid(icon, point)
+		
+		return None
 
 	def __str__(self):
 		return self.grid.__str__()
