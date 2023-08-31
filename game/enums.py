@@ -23,10 +23,10 @@ class ResourceEnum(Enum):
 
 class DevelopmentCardEnum(Enum):
     KNIGHT = "Move the robber and take one resource from an opponent."
-    ROADBUILDER = "Build 2 roads."
-    VICTORYPOINT = "Grants you one victory point."
+    ROAD_BUILDER = "Build 2 roads."
+    VICTORY_POINT = "Grants you one victory point."
     MONOPOLY = "Get all other players' resources of one type."
-    YEAROFPLENTY = "Take 2 of any resource from the bank."
+    YEAR_OF_PLENTY = "Take 2 of any resource from the bank."
     
 class PortEnum(Enum):
     SQUARE = Point(-2, -3)

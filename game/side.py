@@ -3,7 +3,6 @@ from game.enums import SideEnum, SideDirectionEnum, ResourceEnum, PortDirectionE
 from game.tile import Tile
 from game.point import Point
 from game.node import Node
-
 class Side():
 
     CONNECTION_ICON = '·'
@@ -12,7 +11,6 @@ class Side():
         self.resources = resources
         self.direction = direction
         self.ports = []
-
         self.connections = []
 
         def make_port(resource:ResourceEnum, center:Point, type:PortEnum, direction:PortDirectionEnum, adjacent_tiles:[Tile]):
@@ -126,27 +124,3 @@ class Side():
         for port in self.ports:
             s += '\t' + port.__str__()
         return s + '\n'
-    
-
-# 3:1 
-# Brick + 3:1
-# Wood
-# Wheat + 3:1
-# Ore
-# Sheep + 3:1
-
-# solo 
-# side 0: bottom right, square
-# side 1: bottom left, square
-# side 2: top left, triangle
-# side 3: top left, square
-# side 4: top right, square
-# side 5: bottom right, triangle
-
-# duo 
-# side 0: port 0: bottom left, square 
-# side 1: port 0: bottom left, triangle 
-# side 2: port 0: top left, square 
-# side 3: port 0: top right, square 
-# side 4: port 0: top right, triange 
-# side 5: port 0: bottom right, square 

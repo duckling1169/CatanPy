@@ -11,12 +11,12 @@ class Node(Point):
         self.icon = '·'
         self.neighbors = []
         self.tiles_touching = []
-        self.building = Building(BuildingEnum.EMPTY, -1)
+        self.building = Building(BuildingEnum.EMPTY)
         self.port = None
         super().__init__(x, y)
 
-    def set_building(self, building_type:BuildingEnum, player_id:int):
-        if not self.is_empty() and not (building_type == BuildingEnum.CITY and self.building.type == BuildingEnum.SETTLEMENT):
+    def set_building(self, building_type:BuildingEnum, player_id:int) -> bool:
+        if self.has_building() and not (building_type == BuildingEnum.CITY and self.building.type == BuildingEnum.SETTLEMENT):
             return False
         
         if building_type not in self.type.value:
@@ -26,11 +26,11 @@ class Node(Point):
         self.icon = self.building.icon
         return True
     
-    def is_empty(self):
-        return self.building.type == BuildingEnum.EMPTY
+    def has_building(self) -> bool:
+        return self.building.type != BuildingEnum.EMPTY
     
-    def get_player_id(self):
-        return self.building.player_id if self.building is not BuildingEnum.EMPTY else -1
+    def get_player_id(self) -> int:
+        return self.building.player_id if self.has_building() else -1
     
     def __str__(self):
         return super().__str__() + f' | {self.type}'

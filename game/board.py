@@ -7,7 +7,7 @@ from game.tile import Tile
 import random
 import math
 
-class TileMap():
+class Board():
 
     chips = [ 0, 2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12 ]
     
@@ -19,7 +19,7 @@ class TileMap():
     
     START_POINT = Point(6, 3)
     
-    def __init__(self, border):
+    def __init__(self, border:int):
         # shift the start point over if there's a border
         self.START_POINT.shift(border, border)
 
@@ -33,8 +33,8 @@ class TileMap():
         for i in range(len(row_lengths)): # 0 - 4
             for _ in range(row_lengths[i]): # [ 3, 4, 5, 4, 3]
                 for j in range(len(Tile.VERTICE_DIMENSIONS)): # same amount of edges and vertices
-                    all_nodes.append(Node(x=copy_point.x + Tile.VERTICE_DIMENSIONS[j].x, y=copy_point.y + Tile.VERTICE_DIMENSIONS[j].y, type=NodeEnum.VERTEX))
-                    all_nodes.append(Node(x=copy_point.x + Tile.EDGE_DIMENSIONS[j].x, y=copy_point.y + Tile.EDGE_DIMENSIONS[j].y, type=NodeEnum.EDGE))
+                    all_nodes.append(Node(copy_point.x + Tile.VERTICE_DIMENSIONS[j].x, copy_point.y + Tile.VERTICE_DIMENSIONS[j].y, NodeEnum.VERTEX))
+                    all_nodes.append(Node(copy_point.x + Tile.EDGE_DIMENSIONS[j].x, copy_point.y + Tile.EDGE_DIMENSIONS[j].y, NodeEnum.EDGE))
                 
                 tile_centers.append(copy_point.__copy__())
                 copy_point.shift(4, 0)
@@ -133,7 +133,6 @@ class TileMap():
             [ResourceEnum.ORE],
             [ResourceEnum.SHEEP, ResourceEnum.THREE_FOR_ONE]
         ]
-
         random.shuffle(port_resource_collections)
 
         self.sides = []
@@ -144,7 +143,7 @@ class TileMap():
         print(f'Completed TileMap after ({iters}) iteration(s).')
 
 
-    def calculate_neighbors(self, node:Node):
+    def calculate_neighbors(self, node:Node) -> [Node]:
         neighbors = []
 
         dists = {}
@@ -164,7 +163,7 @@ class TileMap():
 
         return neighbors
 
-    def get_node_from_point(self, point:Point):
+    def get_node_from_point(self, point:Point) -> Node:
         if point == None:
             return None
         
@@ -173,7 +172,16 @@ class TileMap():
                 return node
         return None
 
-    def get_tile_from_id(self, id:int):
+    def get_tile_from_point(self, point:Point) -> Tile:
+        if point == None:
+            return None
+        
+        for tile in self.tiles:
+            if tile.center.x == point.x and tile.center.y == point.y:
+                return tile
+        return None
+
+    def get_tile_from_id(self, id:int) -> Tile:
         for tile in self.tiles:
             if tile.id == id:
                 return tile

@@ -6,12 +6,12 @@ class Point:
         self.x = x_init
         self.y = y_init
 
-    def shift(self, x, y):
+    def shift(self, x, y) -> None:
         self.x += x
         self.y += y
 
     @staticmethod
-    def dist(p1_x, p1_y, p2_x, p2_y):
+    def dist(p1_x, p1_y, p2_x, p2_y) -> float:
         return round(math.dist([p1_x, p1_y], [p2_x, p2_y]), 2)
 
     def __copy__(self):
@@ -25,4 +25,4 @@ class Point:
 
     def __str__(self):
         from game.display_grid import DisplayGrid
-        return f'Point({DisplayGrid.convert_to_x_scale(self.x)}, {str(self.y)})'
+        return f'Point({DisplayGrid.int_to_xscale(self.x)}, {str(self.y)})'

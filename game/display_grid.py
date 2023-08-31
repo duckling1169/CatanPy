@@ -12,21 +12,21 @@ class DisplayGrid():
         for _ in range(down):
             self.grid.append([self.empty_icon] * across)
 
-    def get_x_scale(self):
+    def get_x_scale(self) -> [str]:
         x_scale = []
         for i in range(65, 65 + len(self.grid[0])):
             x_scale.append(chr(i+6) if i > 65 + 25 else chr(i))
         return x_scale
     
     @staticmethod
-    def convert_to_x_scale(i):
+    def int_to_xscale(i) -> str:
         return chr(i+6 + 65) if i  > 25 else chr(i + 65)
     
     @staticmethod
-    def x_scale_convert(c):
+    def xscale_to_int(c) -> int:
         return ord(c)-6-65 if ord(c) > 65 + 25 else ord(c)-65
         
-    def update_grid(self, icon:str, p:Point):
+    def update_grid(self, icon:str, p:Point) -> None:
         self.grid[p.y][p.x] = icon
 
     def __str__(self):

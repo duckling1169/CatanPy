@@ -13,7 +13,7 @@ class Port():
         self.update_port_location()
         self.icon = 'P'
 
-    def update_port_location(self):
+    def update_port_location(self) -> None:
         port_x = self.type.value.x * self.direction.value.x
         port_y = self.type.value.y * self.direction.value.y
 

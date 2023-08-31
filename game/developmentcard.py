@@ -3,21 +3,11 @@ from game.enums import DevelopmentCardEnum, ResourceEnum
 
 class DevelopmentCard(Purchaseables):
         
-    def __init__(self, card_type:DevelopmentCardEnum):
-        self.card_type = card_type
+    def __init__(self, type:DevelopmentCardEnum):
+        self.type = type
         self.cost = [ ResourceEnum.WHEAT, ResourceEnum.SHEEP, ResourceEnum.ORE ]
-        super().__init__('Development Card', self.cost)
+        super().__init__(self.type.name.title().replace('_', ' '), self.cost)
 
-    def play(self):
-        match(self.card_type):
-            case DevelopmentCardEnum.KNIGHT: 
-                True
-            case DevelopmentCardEnum.YEAROFPLENTY: 
-                True
-            case DevelopmentCardEnum.ROADBUILDER: 
-                True
-            case DevelopmentCardEnum.MONOPOLY: 
-                True
-            case DevelopmentCardEnum.VICTORYPOINT: 
-                True
-        return True
+    def __str__(self):
+        return f'{self.name}: {self.type.value}'
+    

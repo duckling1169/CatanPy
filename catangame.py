@@ -1,34 +1,53 @@
-from game.tilemap import TileMap
+from game.robber import Robber
+from game.board import Board
 from game.display_grid import DisplayGrid
-from game.enums import DevelopmentCardEnum, PortDirectionEnum, PortEnum
+from game.enums import DevelopmentCardEnum, ResourceEnum
 from game.point import Point
 from game.developmentcard import DevelopmentCard
+
 import random
 
-class CatanBoard:
-	
-	sides = [] # Side()?
-	players = [] # Player()!
-	
-	def __init__(self, border=2, scale=1, empty_icon=' '):
-		self.tilemap = TileMap(border)
-		self.grid = DisplayGrid(DisplayGrid.MIN_ACROSS + border*2, DisplayGrid.MIN_DOWN + border*2, scale, empty_icon)
+class CatanGame:
+		
+	def __init__(self, border:int = 2, auto:bool = True):
+		from players.player import Player
+		from players.aiplayer import AIPlayer
+		
+		self.tilemap = Board(border)
+		self.grid = DisplayGrid(DisplayGrid.MIN_ACROSS + border*2, DisplayGrid.MIN_DOWN + border*2)
+		for tile in self.tilemap.tiles:
+			if tile.resource == ResourceEnum.DESERT:
+				self.robber = Robber(tile.id)
 
 		self.deck = []
 		for _ in range(14):
 			self.deck.append(DevelopmentCard(DevelopmentCardEnum.KNIGHT))
 		for _ in range(5):
-			self.deck.append(DevelopmentCard(DevelopmentCardEnum.VICTORYPOINT))
+			self.deck.append(DevelopmentCard(DevelopmentCardEnum.VICTORY_POINT))
 		for _ in range(2):
 			self.deck.append(DevelopmentCard(DevelopmentCardEnum.MONOPOLY))
 		for _ in range(2):
-			self.deck.append(DevelopmentCard(DevelopmentCardEnum.ROADBUILDER))
+			self.deck.append(DevelopmentCard(DevelopmentCardEnum.ROAD_BUILDER))
 		for _ in range(2):
-			self.deck.append(DevelopmentCard(DevelopmentCardEnum.YEAROFPLENTY))
+			self.deck.append(DevelopmentCard(DevelopmentCardEnum.YEAR_OF_PLENTY))
 
 		random.shuffle(self.deck)
 
-	def update_grid(self):
+		self.players = []
+		if auto:
+			self.players = [ Player('Adam', 0), AIPlayer('CatanBot', 1) ]
+			return
+		
+		resp = ''
+		id = 0
+		while resp != 'q' or len(self.players) > 3:
+			resp = input('Enter next player name or \'ai\' (q to stop): ')
+			if resp != 'q':
+				self.players.append(AIPlayer(resp, id)) if resp == 'ai' else self.players.append(Player(resp, id))
+			id += 1
+
+
+	def update_grid(self) -> None:
 		for tile in self.tilemap:
 			
 			# self.grid.update_grid(tile.resource.value, tile.center.__copy__())

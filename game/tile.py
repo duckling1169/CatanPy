@@ -25,31 +25,7 @@ class Tile:
                 if i+j+2 == self.dice_roll:
                     self.resource_points += 1
 
-        self.has_robber = self.resource == ResourceEnum.DESERT
-
-    def get_printable_tile(self):
-        strings = [ "\n" ]
-
-        match len(self.resource.name):
-            case 6:
-                strings.append(" " + self.resource.name)
-            case 5:
-                strings.append("  " + self.resource.name)
-            case 4:
-                strings.append("  " + self.resource.name)
-            case _:
-                strings.append("   " + self.resource.name)
-
-        if (self.has_robber):
-            strings.append("    R")
-        else:
-            strings.append((
-                "   " + self.dice_roll if self.dice_roll > 9 else (f"    {str(self.dice_roll)}")
-            ))
-        
-        return strings
-    
-    def get_roll_probability(self):
+    def get_roll_probability(self) -> float:
         if self.resource == ResourceEnum.DESERT | self.resource == ResourceEnum.EMPTY:
             return 0
         
