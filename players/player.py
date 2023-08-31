@@ -1,5 +1,5 @@
-from catangame import CatanGame
-from game.enums import DevelopmentCardEnum
+from settlegame import SettleGame
+from game.enums import GrowthCardEnum
 from game.enums import ResourceEnum, BuildingEnum, NodeEnum
 from game.display_grid import DisplayGrid
 from game.node import *
@@ -24,7 +24,7 @@ class Player():
         }
 
 
-    def place_buildings(self, gb:CatanGame, types:[BuildingEnum], receive_resources:bool=False) -> bool:
+    def place_buildings(self, gb:SettleGame, types:[BuildingEnum], receive_resources:bool=False) -> bool:
         match types:
             case [ BuildingEnum.ROAD, BuildingEnum.ROAD ]: # roadbuilder
                 self.place_road(gb, True)
@@ -32,7 +32,7 @@ class Player():
                 print(gb)
                 self.place_road(gb)
                 return True
-            case [ BuildingEnum.SETTLEMENT, BuildingEnum.ROAD ]: # setup
+            case [ BuildingEnum.OUTPOST, BuildingEnum.ROAD ]: # setup
                 settlement_vertex = self.place_settlement(gb, True)
                 if receive_resources:
                     for id in settlement_vertex.tiles_touching:
@@ -56,14 +56,14 @@ class Player():
                 return self.place_road(gb)
             case BuildingEnum.SETTLEMENT:
                 return self.place_settlement(gb)
-            case BuildingEnum.CITY:
+            case BuildingEnum.TOWN:
                 return self.place_city(gb)
         return False
 
-    def place_city(self, gb:CatanGame) -> Node:
+    def place_city(self, gb:SettleGame) -> Node:
         city_upgraded = False
         while not city_upgraded:
-            city_point = self.get_location_from_user(BuildingEnum.CITY.name.lower())
+            city_point = self.get_location_from_user(BuildingEnum.TOWN.name.lower())
 
             if not city_point: # quit out
                 return False
@@ -71,14 +71,14 @@ class Player():
             city_vertex = gb.tilemap.get_node_from_point(city_point)
             
             if self.check_city_vertex(city_vertex):
-                city_upgraded = city_vertex.set_building(BuildingEnum.CITY, self.id)
+                city_upgraded = city_vertex.set_building(BuildingEnum.TOWN, self.id)
 
         return city_vertex
     
-    def place_settlement(self, gb:CatanGame, setup:bool = False) -> Node:
+    def place_settlement(self, gb:SettleGame, setup:bool = False) -> Node:
         settlement_placed = False
         while not settlement_placed:
-            settlement_point = self.get_location_from_user(BuildingEnum.SETTLEMENT.name.lower())
+            settlement_point = self.get_location_from_user(BuildingEnum.OUTPOST.name.lower())
 
             if not settlement_point: # quit out
                 return False
@@ -86,11 +86,11 @@ class Player():
             settlement_vertex = gb.tilemap.get_node_from_point(settlement_point)
 
             if self.check_settlement_vertex(settlement_vertex, setup):
-                settlement_placed = settlement_vertex.set_building(BuildingEnum.SETTLEMENT, self.id)
+                settlement_placed = settlement_vertex.set_building(BuildingEnum.OUTPOST, self.id)
 
         return settlement_vertex
     
-    def place_road(self, gb:CatanGame) -> Node:
+    def place_road(self, gb:SettleGame) -> Node:
         road_placed = False
         while not road_placed:
             road_point = self.get_location_from_user(BuildingEnum.ROAD.name.lower())
@@ -126,13 +126,13 @@ class Player():
         neighbor_found = False
         for neighbor in settlement_vertex.neighbors:
             if neighbor.type == NodeEnum.VERTEX:
-                if neighbor.has_building() and neighbor.building.type == BuildingEnum.SETTLEMENT or neighbor.building.type == BuildingEnum.CITY:
+                if neighbor.has_building() and neighbor.building.type == BuildingEnum.OUTPOST or neighbor.building.type == BuildingEnum.TOWN:
                     neighbor_found = True
                     break
             elif neighbor.type == NodeEnum.EDGE:
                 for other in neighbor.neighbors:
                     if other.type == NodeEnum.VERTEX:
-                        if other.has_building() and other.building.type == BuildingEnum.SETTLEMENT or other.building.type == BuildingEnum.CITY:
+                        if other.has_building() and other.building.type == BuildingEnum.OUTPOST or other.building.type == BuildingEnum.TOWN:
                             neighbor_found = True
                             break
         if neighbor_found: # print('That spot is too close to another building!')
@@ -155,13 +155,13 @@ class Player():
             return False
 
         for neighbor in road_edge.neighbors: # can't build a road passed another player's settlement
-            if not neighbor.has_building() and neighbor.building.type == BuildingEnum.SETTLEMENT and \
+            if not neighbor.has_building() and neighbor.building.type == BuildingEnum.OUTPOST and \
                 neighbor.building.player_id != self.id: # print('That spot is too close to another player\'s settlement!')
                 return False
         
         neighbor_found = False
         for neighbor in road_edge.neighbors: # need to build next to your own settlements or roads
-            if not neighbor.has_building() and neighbor.building.type == BuildingEnum.SETTLEMENT and neighbor.building.player_id == self.id or\
+            if not neighbor.has_building() and neighbor.building.type == BuildingEnum.OUTPOST and neighbor.building.player_id == self.id or\
                 not neighbor.has_building() and neighbor.building.type == BuildingEnum.ROAD and neighbor.building.player_id == self.id:
                 neighbor_found = True
                 break
@@ -191,7 +191,7 @@ class Player():
             victory_points += building.victory_points
         
         for dev_card in self.played_dev_cards:
-            if dev_card.type == DevelopmentCardEnum.VICTORY_POINT:
+            if dev_card.type == GrowthCardEnum.VICTORY_POINT:
                 victory_points += 1
         
         # TODO: check largest army + longest road | update_x()?
@@ -218,21 +218,21 @@ class Player():
         # - confirm trade
         return True
 
-    def move_robber(self, gb:CatanGame) -> bool:
-        # select a tile to move the robber to (x, y since there could be dupes)
+    def move_robber(self, gb:SettleGame) -> bool:
+        # select a tile to move the thief to (x, y since there could be dupes)
         robber_moved = False
         tile = None
         while not robber_moved:
-            tile_point = self.get_location_from_user('Robber', False)
+            tile_point = self.get_location_from_user('Thief', False)
             
             if not tile_point: # can't quit out
-                print('Need to place the robber.')
+                print('Need to place the thief.')
                 continue
                         
             tile = gb.tilemap.get_tile_from_point(tile_point)
             
-            if tile.id != gb.robber.get_current_tile_id():
-                gb.robber.move(tile.id)
+            if tile.id != gb.thief.get_current_tile_id():
+                gb.thief.move(tile.id)
                 robber_moved = True
 
         player_ids = []
@@ -268,16 +268,16 @@ class Player():
 
         return True
 
-    def play_development_card(self, gb:CatanGame) -> bool:
+    def play_development_card(self, gb:SettleGame) -> bool:
         print('What card do you want to play?')
         for card, count in dict(Counter(self.unplayed_dev_cards).items()).items():
             print(f'\t{str(card.name)} ({count}): {card.type.value}')
         print()
         
         match(self.unplayed_dev_cards[0].type):
-            case DevelopmentCardEnum.KNIGHT: 
+            case GrowthCardEnum.KNIGHT: 
                 return self.move_robber(gb)
-            case DevelopmentCardEnum.YEAR_OF_PLENTY: 
+            case GrowthCardEnum.YEAR_OF_PLENTY: 
                 buyable_resources = [re for re in ResourceEnum if re not in [ ResourceEnum.DESERT, ResourceEnum.EMPTY, ResourceEnum.THREE_FOR_ONE ] ]
                 buyable_resource_names = [re.value.casefold() for re in ResourceEnum if re not in [ ResourceEnum.DESERT, ResourceEnum.EMPTY, ResourceEnum.THREE_FOR_ONE ] ]
                 
@@ -303,10 +303,10 @@ class Player():
 
                 # - year of plenty - add any 2 resources to hand (player class)
                 return True
-            case DevelopmentCardEnum.MONOPOLY: 
+            case GrowthCardEnum.MONOPOLY: 
                 return self.place_buildings(gb, [BuildingEnum.ROAD, BuildingEnum.ROAD])
-            case DevelopmentCardEnum.ROAD_BUILDER: 
-                # - monopoly - select one resource to take from all player's hands (player? catangame?)
+            case GrowthCardEnum.ROAD_BUILDER: 
+                # - monopoly - select one resource to take from all player's hands (player? SettleGame?)
                 return True
 
         return True
@@ -318,10 +318,10 @@ class Player():
         # if type == victory_point, move card to victory point hand
         return True
     
-    def take_turn(self, gb:CatanGame) -> None:
-        # * Can only play 1 development card per turn
-        # Before-roll options: Play Development card or roll 
-        # Roll + give out resources OR if 7; move Robber + steal from a player on that tile
+    def take_turn(self, gb:SettleGame) -> None:
+        # * Can only play 1 growth card per turn
+        # Before-roll options: Play growth card or roll 
+        # Roll + give out resources OR if 7; move thief + steal from a player on that tile
         # After-roll options: Buy a purchaseable item or trade with bank or players
 
         print(self)

@@ -1,4 +1,4 @@
-from catangame import CatanGame
+from settlegame import SettleGame
 from game.enums import *
 from game.display_grid import *
 from players.player import Player
@@ -8,7 +8,7 @@ class Runner:
 
     def __init__(self):
 
-        gb = CatanGame() 
+        gb = SettleGame() 
         gb.setup_game()
         while True:
             for player in gb.players:
@@ -23,7 +23,7 @@ class Tester:
             print(f'{func}: {getattr(Tester, func)()}')
 
     def test_nodes():
-        gb = CatanGame()
+        gb = SettleGame()
 
         vertices = []
         edges = []
@@ -33,7 +33,7 @@ class Tester:
         return len(vertices) == 54 and len(edges) == 72
 
     def test_display():
-        gb = CatanGame(border=1, scale=2, empty_icon='E', random_ports=False)
+        gb = SettleGame(border=1, scale=2, empty_icon='E', random_ports=False)
         gb.update_grid()
         print(gb)
         return True
@@ -41,7 +41,7 @@ class Tester:
 
 
     def test_create_road():
-        gb = CatanGame() 
+        gb = SettleGame() 
 
         node_id = 0
         for i in range(len(gb.tilemap.nodes)):
@@ -56,7 +56,7 @@ class Tester:
                 gb.tilemap.nodes[node_id].building.player_id == 0
 
     def test_create_settlement():
-        gb = CatanGame() 
+        gb = SettleGame() 
 
         node_id = 0
         for i in range(len(gb.tilemap.nodes)):
@@ -64,14 +64,14 @@ class Tester:
                 node_id = i
                 break
 
-        gb.tilemap.nodes[node_id].set_building(BuildingEnum.SETTLEMENT, 0)
+        gb.tilemap.nodes[node_id].set_building(BuildingEnum.OUTPOST, 0)
         gb.update_grid()
         return gb.tilemap.nodes[node_id].has_building() and \
-            gb.tilemap.nodes[node_id].building.type == BuildingEnum.SETTLEMENT and \
+            gb.tilemap.nodes[node_id].building.type == BuildingEnum.OUTPOST and \
                 gb.tilemap.nodes[node_id].building.player_id == 0
 
     def test_create_city():
-        gb = CatanGame() 
+        gb = SettleGame() 
 
         node_id = 0
         for i in range(len(gb.tilemap.nodes)):
@@ -79,21 +79,21 @@ class Tester:
                 node_id = i
                 break
 
-        gb.tilemap.nodes[node_id].set_building(BuildingEnum.CITY, 0)
+        gb.tilemap.nodes[node_id].set_building(BuildingEnum.TOWN, 0)
         gb.update_grid()
         return gb.tilemap.nodes[node_id].has_building() and \
-            gb.tilemap.nodes[node_id].building.type == BuildingEnum.CITY and \
+            gb.tilemap.nodes[node_id].building.type == BuildingEnum.TOWN and \
                 gb.tilemap.nodes[node_id].building.player_id == 0
 
     def test_development_cards():
-        gb = CatanGame()
-        gb.players[0].unplayed_dev_cards.append(DevelopmentCard(DevelopmentCardEnum.KNIGHT))
+        gb = SettleGame()
+        gb.players[0].unplayed_dev_cards.append(DevelopmentCard(GrowthCardEnum.KNIGHT))
         gb.players[0].play_development_card(gb)
-        gb.players[0].unplayed_dev_cards.append(DevelopmentCard(DevelopmentCardEnum.YEAR_OF_PLENTY))
+        gb.players[0].unplayed_dev_cards.append(DevelopmentCard(GrowthCardEnum.YEAR_OF_PLENTY))
         gb.players[0].play_development_card(gb)
-        gb.players[0].unplayed_dev_cards.append(DevelopmentCard(DevelopmentCardEnum.ROAD_BUILDER))
+        gb.players[0].unplayed_dev_cards.append(DevelopmentCard(GrowthCardEnum.ROAD_BUILDER))
         gb.players[0].play_development_card(gb)
-        gb.players[0].unplayed_dev_cards.append(DevelopmentCard(DevelopmentCardEnum.MONOPOLY))
+        gb.players[0].unplayed_dev_cards.append(DevelopmentCard(GrowthCardEnum.MONOPOLY))
         gb.players[0].play_development_card(gb)
 
 tester = Tester()

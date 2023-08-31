@@ -1,11 +1,12 @@
-from game.robber import Robber
+from game.thief import Thief
 from game.board import Board
 from game.display_grid import DisplayGrid
-from game.enums import DevelopmentCardEnum, ResourceEnum, BuildingEnum
+from game.enums import GrowthCardEnum, ResourceEnum, BuildingEnum
 from game.point import Point
 from game.developmentcard import DevelopmentCard
 import random
-class CatanGame:
+
+class SettleGame:
 		
 	def __init__(self, border:int=2, auto:bool=True, scale:int=1, empty_icon:str=' ', random_ports:bool=True):
 		from players.player import Player
@@ -16,19 +17,19 @@ class CatanGame:
 
 		for tile in self.tilemap.tiles:
 			if tile.resource == ResourceEnum.DESERT:
-				self.robber = Robber(tile.id)
+				self.thief = Thief(tile.id)
 
 		self.deck = []
 		for _ in range(14):
-			self.deck.append(DevelopmentCard(DevelopmentCardEnum.KNIGHT))
+			self.deck.append(DevelopmentCard(GrowthCardEnum.KNIGHT))
 		for _ in range(5):
-			self.deck.append(DevelopmentCard(DevelopmentCardEnum.VICTORY_POINT))
+			self.deck.append(DevelopmentCard(GrowthCardEnum.VICTORY_POINT))
 		for _ in range(2):
-			self.deck.append(DevelopmentCard(DevelopmentCardEnum.MONOPOLY))
+			self.deck.append(DevelopmentCard(GrowthCardEnum.MONOPOLY))
 		for _ in range(2):
-			self.deck.append(DevelopmentCard(DevelopmentCardEnum.ROAD_BUILDER))
+			self.deck.append(DevelopmentCard(GrowthCardEnum.ROAD_BUILDER))
 		for _ in range(2):
-			self.deck.append(DevelopmentCard(DevelopmentCardEnum.YEAR_OF_PLENTY))
+			self.deck.append(DevelopmentCard(GrowthCardEnum.YEAR_OF_PLENTY))
 
 		random.shuffle(self.deck)
 
@@ -49,14 +50,14 @@ class CatanGame:
 		for player in self.players:
 			self.update_grid()
 			print(self)
-			player.place_buildings(self, [BuildingEnum.SETTLEMENT, BuildingEnum.ROAD])
+			player.place_buildings(self, [BuildingEnum.OUTPOST, BuildingEnum.ROAD])
 
 		self.gb.players.reverse()
 
 		for player in self.players:
 			self.update_grid()
 			print(self)
-			player.place_buildings(self, [BuildingEnum.SETTLEMENT, BuildingEnum.ROAD], True)
+			player.place_buildings(self, [BuildingEnum.OUTPOST, BuildingEnum.ROAD], True)
 
 		self.gb.players.reverse()
 

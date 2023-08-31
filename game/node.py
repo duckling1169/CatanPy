@@ -16,7 +16,7 @@ class Node(Point):
         super().__init__(x, y)
 
     def set_building(self, building_type:BuildingEnum, player_id:int) -> bool:
-        if self.has_building() and not (building_type == BuildingEnum.CITY and self.building.type == BuildingEnum.SETTLEMENT):
+        if self.has_building() and not (building_type == BuildingEnum.TOWN and self.building.type == BuildingEnum.SETTLEMENT):
             return False
         
         if building_type not in self.type.value:

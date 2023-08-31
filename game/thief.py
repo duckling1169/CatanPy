@@ -1,4 +1,4 @@
-class Robber():
+class Thief():
 
     def __init__(self, tile_id:int):
         self.history = [[tile_id, 0]]

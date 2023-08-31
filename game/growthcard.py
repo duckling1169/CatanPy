@@ -1,9 +1,9 @@
 from game.purchaseables import Purchaseables
-from game.enums import DevelopmentCardEnum, ResourceEnum
+from game.enums import GrowthCardEnum, ResourceEnum
 
-class DevelopmentCard(Purchaseables):
+class GrowthCard(Purchaseables):
         
-    def __init__(self, type:DevelopmentCardEnum):
+    def __init__(self, type:GrowthCardEnum):
         self.type = type
         self.cost = [ ResourceEnum.WHEAT, ResourceEnum.SHEEP, ResourceEnum.ORE ]
         super().__init__(self.type.name.title().replace('_', ' '), self.cost)

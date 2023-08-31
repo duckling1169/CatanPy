@@ -148,7 +148,6 @@ class Board():
         
         print(f'Completed TileMap after ({iters}) iteration(s).')
 
-
     def calculate_neighbors(self, node:Node) -> [Node]:
         neighbors = []
 

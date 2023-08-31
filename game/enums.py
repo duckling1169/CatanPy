@@ -4,11 +4,11 @@ from enum import Enum
 class BuildingEnum(Enum):
     EMPTY = 'X'
     ROAD = 'R'
-    SETTLEMENT = 'S'
-    CITY = 'C'
+    OUTPOST = 'O'
+    TOWN = 'T'
 
 class NodeEnum(Enum):
-    VERTEX = [ BuildingEnum.EMPTY, BuildingEnum.SETTLEMENT, BuildingEnum.CITY ]
+    VERTEX = [ BuildingEnum.EMPTY, BuildingEnum.OUTPOST, BuildingEnum.TOWN ]
     EDGE = [ BuildingEnum.EMPTY, BuildingEnum.ROAD ]
 
 class ResourceEnum(Enum):
@@ -21,8 +21,8 @@ class ResourceEnum(Enum):
     DESERT = 'Desert'
     THREE_FOR_ONE = '3:1'
 
-class DevelopmentCardEnum(Enum):
-    KNIGHT = "Move the robber and take one resource from an opponent."
+class GrowthCardEnum(Enum):
+    KNIGHT = "Move the thief and take one resource from an opponent."
     ROAD_BUILDER = "Build 2 roads."
     VICTORY_POINT = "Grants you one victory point."
     MONOPOLY = "Get all other players' resources of one type."

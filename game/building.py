@@ -12,10 +12,10 @@ class Building(Purchaseables):
             case BuildingEnum.ROAD:
                 self.victory_points = 0
                 super().__init__(name, [ ResourceEnum.BRICK, ResourceEnum.WOOD ])
-            case BuildingEnum.SETTLEMENT:
+            case BuildingEnum.OUTPOST:
                 self.victory_points = 1
                 super().__init__(name, [ ResourceEnum.WHEAT, ResourceEnum.SHEEP, ResourceEnum.BRICK, ResourceEnum.WOOD ])
-            case BuildingEnum.CITY:
+            case BuildingEnum.TOWN:
                 self.victory_points = 2
                 super().__init__(name, [ ResourceEnum.WHEAT, ResourceEnum.WHEAT, ResourceEnum.ORE, ResourceEnum.ORE, ResourceEnum.ORE ])
 
