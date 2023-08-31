@@ -2,10 +2,10 @@ from game.point import Point
 
 class DisplayGrid():
 
-    MIN_ACROSS = 21
+    MIN_ACROSS = 25
     MIN_DOWN = 23
 
-    def __init__(self, across, down, scale = 1, empty_icon = ' '):
+    def __init__(self, across:int, down:int, scale:int, empty_icon:int):
         self.grid = []
         self.scale = scale
         self.empty_icon = empty_icon
@@ -34,37 +34,35 @@ class DisplayGrid():
 
         for i in range(len(self.grid)-1, -1, -1):
             if i > 9:
-                s += str(i) + ' | '
+                s += str(i) + ' |' + '  '*self.scale
             else:
-                s += str(i) + '  | '
-            
-            s += ' ' * self.scale
+                s += str(i) + '  |' + '  '*self.scale
 
             for j in range(len(self.grid[i])):
                 curr_icon = str(self.grid[i][j])
                 match len(curr_icon):
                     case 1:
-                        s += curr_icon + '  '*self.scale
+                        s += curr_icon + '  '*self.scale # 2, 4
                     case 2:
-                        s += curr_icon + ' '*self.scale
+                        s += curr_icon + ' ' + '  '*(self.scale-1) # 1 (1), 2 (3), 3 (5)
                     case 3:
-                        s = s[:-1] + curr_icon + ' '*self.scale
+                        s = s[:-1] + curr_icon + ' ' + '  '*(self.scale-1)
                     case 4:
-                        s = s[:-1] + curr_icon
+                        s = s[:-1] + curr_icon + '  '*(self.scale-1)
                     case 5:
-                        s = s[:-2] + curr_icon
+                        s = s[:-2] + curr_icon + '  '*(self.scale-1)
                     case 6:
-                        s = s[:-3] + curr_icon
+                        s = s[:-3] + curr_icon + '  '*(self.scale-1)
             
             s += '\n'*self.scale
 
-        s += '   +-'
+        s += '   +'
         for i in range(len(self.grid[0])):
-            s += '-+-'*self.scale
+            s += '--'*self.scale + '+'
 
-        s += '\n      '
+        s += '\n' + ' '*4
         x_scale = self.get_x_scale()
         for c in x_scale:
-            s += c + '  '*self.scale
+            s += '  '*self.scale + c
             
         return s

@@ -9,22 +9,23 @@ import math
 
 class Board():
 
-    chips = [ 0, 2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12 ]
+    STARTING_CHIPS = [ 0, 2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12 ]
     
-    tile_resources = [ ResourceEnum.WHEAT, ResourceEnum.WHEAT, ResourceEnum.WHEAT, ResourceEnum.WHEAT, 
+    STARTING_RESOURCES = [ ResourceEnum.WHEAT, ResourceEnum.WHEAT, ResourceEnum.WHEAT, ResourceEnum.WHEAT, 
                 ResourceEnum.SHEEP, ResourceEnum.SHEEP, ResourceEnum.SHEEP, ResourceEnum.SHEEP,
                 ResourceEnum.WOOD, ResourceEnum.WOOD, ResourceEnum.WOOD, ResourceEnum.WOOD, 
                 ResourceEnum.ORE, ResourceEnum.ORE, ResourceEnum.ORE, 
                 ResourceEnum.BRICK, ResourceEnum.BRICK, ResourceEnum.BRICK, ResourceEnum.DESERT ]
     
-    START_POINT = Point(6, 3)
+    START_POINT = Point(8, 3)
     
-    def __init__(self, border:int):
+    def __init__(self, border:int, random_ports:bool):
         # shift the start point over if there's a border
-        self.START_POINT.shift(border, border)
+        shifted = Board.START_POINT.__copy__()
+        shifted.shift(border, border)
 
         # Get all locations for the nodes
-        orig_point = self.START_POINT.__copy__()
+        orig_point = shifted.__copy__()
         copy_point = orig_point.__copy__()
 
         tile_centers = []
@@ -41,6 +42,7 @@ class Board():
 
             orig_point.shift(-2, 4) if i < 2 else orig_point.shift(2, 4)
             copy_point = orig_point.__copy__()
+
 
         self.nodes = list(set(all_nodes))
 
@@ -61,6 +63,7 @@ class Board():
                 return True
 
             for middle in range(start_top, tile_numbers[1] + start_top): # tile_numbers[1] = 4
+
                 mid = self.chips[middle]
                 top_left = self.chips[middle - 4] if middle != start_top else 0
                 top_right = self.chips[middle - 3] if middle != start_top + tile_numbers[1] - 1 else 0
@@ -87,6 +90,7 @@ class Board():
             return True
         
         iters = 0
+        self.chips = Board.STARTING_CHIPS.copy()
         while not chips_assigned_fairly(row_lengths):
             iters += 1
             random.shuffle(self.chips)
@@ -94,6 +98,7 @@ class Board():
         self.chips.reverse()
 
         # DESERT SHOULD APPEAR WHERE 0 CHIP IS
+        self.tile_resources = Board.STARTING_RESOURCES.copy()
         random.shuffle(self.tile_resources)
         self.tile_resources.remove(ResourceEnum.DESERT)
         self.tile_resources.insert(self.chips.index(0), ResourceEnum.DESERT)
@@ -133,7 +138,8 @@ class Board():
             [ResourceEnum.ORE],
             [ResourceEnum.SHEEP, ResourceEnum.THREE_FOR_ONE]
         ]
-        random.shuffle(port_resource_collections)
+        if random_ports:
+            random.shuffle(port_resource_collections)
 
         self.sides = []
         for direction in SideDirectionEnum:

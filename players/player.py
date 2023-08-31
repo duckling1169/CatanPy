@@ -278,6 +278,29 @@ class Player():
             case DevelopmentCardEnum.KNIGHT: 
                 return self.move_robber(gb)
             case DevelopmentCardEnum.YEAR_OF_PLENTY: 
+                buyable_resources = [re for re in ResourceEnum if re not in [ ResourceEnum.DESERT, ResourceEnum.EMPTY, ResourceEnum.THREE_FOR_ONE ] ]
+                buyable_resource_names = [re.value.casefold() for re in ResourceEnum if re not in [ ResourceEnum.DESERT, ResourceEnum.EMPTY, ResourceEnum.THREE_FOR_ONE ] ]
+                
+                resp = ''
+                while resp != 'q':
+                    resp = input('What resources do you want? (Resource 1, Resource 2)\n')
+
+                    if ',' not in resp:
+                        continue
+
+                    resources = resp.split(',')
+
+                    if resources[0].strip().casefold() not in buyable_resource_names or resources[1].strip().casefold() not in buyable_resource_names:
+                        continue
+                
+                    resource_1 = buyable_resources[buyable_resource_names.index(resources[0].strip().casefold())]
+                    resource_2 = buyable_resources[buyable_resource_names.index(resources[1].strip().casefold())]
+
+                    self.resource_hand.append(resource_1)
+                    self.resource_hand.append(resource_2)
+
+                    return True
+
                 # - year of plenty - add any 2 resources to hand (player class)
                 return True
             case DevelopmentCardEnum.MONOPOLY: 

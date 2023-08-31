@@ -4,17 +4,16 @@ from game.display_grid import DisplayGrid
 from game.enums import DevelopmentCardEnum, ResourceEnum
 from game.point import Point
 from game.developmentcard import DevelopmentCard
-
 import random
-
 class CatanGame:
 		
-	def __init__(self, border:int = 2, auto:bool = True):
+	def __init__(self, border:int=2, auto:bool=True, scale:int=1, empty_icon:str=' ', random_ports:bool=True):
 		from players.player import Player
 		from players.aiplayer import AIPlayer
 		
-		self.tilemap = Board(border)
-		self.grid = DisplayGrid(DisplayGrid.MIN_ACROSS + border*2, DisplayGrid.MIN_DOWN + border*2)
+		self.tilemap = Board(border, random_ports)
+		self.grid = DisplayGrid(DisplayGrid.MIN_ACROSS + border*2, DisplayGrid.MIN_DOWN + border*2, scale, empty_icon)
+
 		for tile in self.tilemap.tiles:
 			if tile.resource == ResourceEnum.DESERT:
 				self.robber = Robber(tile.id)
@@ -46,7 +45,6 @@ class CatanGame:
 				self.players.append(AIPlayer(resp, id)) if resp == 'ai' else self.players.append(Player(resp, id))
 			id += 1
 
-
 	def update_grid(self) -> None:
 		for tile in self.tilemap:
 			
@@ -61,7 +59,7 @@ class CatanGame:
 			# upper_center.shift(0, -1)
 			# self.grid.update_grid(f'({str(tile.resource_points)})', upper_center.__copy__())
 
-			self.grid.update_grid(str(tile.id), tile.center.__copy__())
+			self.grid.update_grid(str(tile.resource.value), tile.center.__copy__())
 
 			# for node in tile.nodes:
 			# 	self.grid.update_grid(node.icon, Point(node.x, node.y))
@@ -75,8 +73,5 @@ class CatanGame:
 			for point, icon in side.connections:
 				self.grid.update_grid(icon, point)
 
-		# End updating board
-
 	def __str__(self):
 		return self.grid.__str__()
-
