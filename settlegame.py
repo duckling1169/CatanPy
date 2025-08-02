@@ -9,16 +9,21 @@ import random
 class SettleGame:
 		
 	def __init__(self, border:int=2, auto:bool=True, scale:int=1, empty_icon:str=' ', random_ports:bool=True):
+		# Import here to avoid circular imports
 		from players.player import Player
 		from players.aiplayer import AIPlayer
 		
 		self.tilemap = Board(border, random_ports)
 		self.grid = DisplayGrid(DisplayGrid.MIN_ACROSS + border*2, DisplayGrid.MIN_DOWN + border*2, scale, empty_icon)
 
+		# Initialize thief on desert tile
+		self.thief = None
 		for tile in self.tilemap.tiles:
 			if tile.resource == ResourceEnum.DESERT:
 				self.thief = Thief(tile.id)
+				break
 
+		# Initialize development card deck
 		self.deck = []
 		for _ in range(14):
 			self.deck.append(GrowthCard(GrowthCardEnum.KNIGHT))
@@ -33,58 +38,64 @@ class SettleGame:
 
 		random.shuffle(self.deck)
 
+		# Initialize players
 		self.players = []
 		if auto:
 			self.players = [ Player('Adam', 0), AIPlayer('CatanBot', 1) ]
 			return
 		
+		# Manual player setup
 		resp = ''
 		id = 0
-		while resp != 'q' or len(self.players) > 3:
+		while resp != 'q' and len(self.players) < 4:  # Max 4 players
 			resp = input('Enter next player name or \'ai\' (q to stop): ')
 			if resp != 'q':
-				self.players.append(AIPlayer(resp, id)) if resp == 'ai' else self.players.append(Player(resp, id))
-			id += 1
+				if resp == 'ai':
+					self.players.append(AIPlayer(f'Bot{id}', id))
+				else:
+					self.players.append(Player(resp, id))
+				id += 1
 
 	def setup_game(self) -> None:
+		"""Setup phase - each player places 2 settlements and 2 roads"""
+		print("=== SETUP PHASE ===")
+		
+		# First round - each player places 1 settlement + 1 road
 		for player in self.players:
 			self.update_grid()
 			print(self)
+			print(f"{player.name}'s turn to place initial settlement and road")
 			player.place_buildings(self, [BuildingEnum.OUTPOST, BuildingEnum.ROAD])
 
-		self.gb.players.reverse()
-
+		# Second round - reverse order, players get resources from second settlement
+		self.players.reverse()
 		for player in self.players:
 			self.update_grid()
 			print(self)
+			print(f"{player.name}'s turn to place second settlement and road")
 			player.place_buildings(self, [BuildingEnum.OUTPOST, BuildingEnum.ROAD], True)
 
-		self.gb.players.reverse()
+		# Restore original order
+		self.players.reverse()
+		print("Setup phase complete!")
 
+	def draw_development_card(self):
+		"""Draw a development card from the deck"""
+		if self.deck:
+			return self.deck.pop()
 		return None
 
 	def update_grid(self) -> None:
+		"""Update the display grid with current game state"""
+		# Clear grid first by updating with empty tiles
 		for tile in self.tilemap:
-			
-			# self.grid.update_grid(tile.resource.value, tile.center.__copy__())
-			# lower_center = tile.center.__copy__()
-			# lower_center.shift(0, 1)
-			# if tile.has_robber:
-			# 	self.grid.update_grid('R', lower_center.__copy__())
-			# else:
-			# 	self.grid.update_grid(tile.dice_roll, lower_center.__copy__())
-			# upper_center = tile.center.__copy__()
-			# upper_center.shift(0, -1)
-			# self.grid.update_grid(f'({str(tile.resource_points)})', upper_center.__copy__())
-
 			self.grid.update_grid(str(tile.resource.value), tile.center.__copy__())
 
-			# for node in tile.nodes:
-			# 	self.grid.update_grid(node.icon, Point(node.x, node.y))
-			
+		# Update nodes (buildings)
 		for node in self.tilemap.nodes:
 			self.grid.update_grid(node.icon, Point(node.x, node.y))
 
+		# Update sides (ports and connections)
 		for side in self.tilemap.sides:
 			for port in side.ports:
 				self.grid.update_grid(port.icon, port.center)

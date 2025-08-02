@@ -34,3 +34,11 @@ class Node(Point):
     
     def __str__(self):
         return super().__str__() + f' | {self.type}'
+    
+    def __eq__(self, other):
+        if not isinstance(other, Node):
+            return False
+        return self.x == other.x and self.y == other.y and self.type == other.type
+    
+    def __hash__(self):
+        return hash((self.x, self.y, self.type))
