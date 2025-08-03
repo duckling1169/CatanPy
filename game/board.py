@@ -44,7 +44,14 @@ class Board():
             copy_point = orig_point.__copy__()
 
 
-        self.nodes = list(set(all_nodes))
+        # Remove duplicates more efficiently using a dictionary
+        unique_nodes = {}
+        for node in all_nodes:
+            key = (node.x, node.y, node.type)
+            if key not in unique_nodes:
+                unique_nodes[key] = node
+        self.nodes = list(unique_nodes.values())
+        print(f"Created {len(self.nodes)} unique nodes from {len(all_nodes)} total nodes")
 
         # Distributes chips according to Catan rules
         def chips_assigned_fairly(tile_numbers):
@@ -90,10 +97,14 @@ class Board():
             return True
         
         iters = 0
+        max_iters = 1000  # Prevent infinite loops
         self.chips = Board.STARTING_CHIPS.copy()
-        while not chips_assigned_fairly(row_lengths):
+        while not chips_assigned_fairly(row_lengths) and iters < max_iters:
             iters += 1
             random.shuffle(self.chips)
+        
+        if iters >= max_iters:
+            print("Warning: Could not find optimal chip placement within iteration limit. Using current arrangement.")
 
         self.chips.reverse()
 
@@ -126,7 +137,11 @@ class Board():
                             node.tiles_touching.append(other_tile.id)
                 node.tiles_touching = list(set(node.tiles_touching))
 
-        for node in self.nodes:
+        # Calculate neighbors more efficiently
+        print("Calculating node neighbors...")
+        for i, node in enumerate(self.nodes):
+            if i % 20 == 0:  # Progress indicator
+                print(f"Progress: {i}/{len(self.nodes)} nodes processed")
             node.neighbors = self.calculate_neighbors(node)
 
         # Create all 6 sides
@@ -149,24 +164,58 @@ class Board():
         print(f'Completed TileMap after ({iters}) iteration(s).')
 
     def calculate_neighbors(self, node:Node) -> [Node]:
+        """Calculate neighbors more efficiently using predefined patterns"""
         neighbors = []
-
-        dists = {}
-        for other in self.nodes:
-            dist = math.floor(Point.dist(node.x, node.y, other.x, other.y))
-            if dist in dists:
-                dists[dist].append((node, other))
-            elif dist != 0:
-                dists[dist] = [(node, other)]
-
-        distances = list(set(dists.keys()))
-        distances.sort()
-
-        for distances in distances[:2]:
-            for node, other in dists[distances]:
-                neighbors.append(other)
-
+        
+        # For hexagonal grid, neighbors are at specific relative positions
+        # This is much more efficient than calculating distance to every node
+        neighbor_offsets = [
+            (-2, 0), (2, 0),    # horizontal neighbors
+            (-1, -2), (1, -2),  # upper diagonal
+            (-1, 2), (1, 2)     # lower diagonal
+        ]
+        
+        # Add closer neighbors for edge-vertex connections
+        close_offsets = [
+            (-1, -1), (1, -1), (-1, 1), (1, 1),  # close diagonal
+            (0, -2), (0, 2)     # vertical
+        ]
+        
+        all_offsets = neighbor_offsets + close_offsets
+        
+        for dx, dy in all_offsets:
+            target_x = node.x + dx
+            target_y = node.y + dy
+            
+            # Find node at this position
+            for other in self.nodes:
+                if other.x == target_x and other.y == target_y:
+                    # Check if this is a valid neighbor based on node types
+                    if self.are_valid_neighbors(node, other):
+                        neighbors.append(other)
+                    break
+        
         return neighbors
+    
+    def are_valid_neighbors(self, node1:Node, node2:Node) -> bool:
+        """Check if two nodes can be neighbors based on their types and distance"""
+        dist = Point.dist(node1.x, node1.y, node2.x, node2.y)
+        
+        # Vertices connect to edges and other vertices at specific distances
+        if node1.type == NodeEnum.VERTEX:
+            if node2.type == NodeEnum.EDGE:
+                return 1.8 <= dist <= 2.2  # Edges are about distance 2 from vertices
+            elif node2.type == NodeEnum.VERTEX:
+                return 3.8 <= dist <= 4.2  # Vertices are about distance 4 from each other
+        
+        # Edges connect to vertices and other edges
+        elif node1.type == NodeEnum.EDGE:
+            if node2.type == NodeEnum.VERTEX:
+                return 1.8 <= dist <= 2.2  # Vertices are about distance 2 from edges
+            elif node2.type == NodeEnum.EDGE:
+                return 2.8 <= dist <= 3.2  # Edges connect to other edges at distance ~3
+        
+        return False
 
     def get_node_from_point(self, point:Point) -> Node:
         if point == None:
